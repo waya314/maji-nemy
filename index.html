@@ -235,7 +235,6 @@
             background-color: var(--primary-light);
         }
 
-        /* ボタン類：色漏れ防止のため外側カラーシャドウを使わずフラット＋クリーンボーダー */
         .icon-btn {
             height: 32px;
             padding: 0 11px;
@@ -289,6 +288,7 @@
             border: 2px solid #ffffff;
         }
 
+        /* 管理者専用タブバー（一般ユーザーには非表示） */
         .main-tabs {
             display: flex;
             border-top: 1px solid #f4eff1;
@@ -536,7 +536,7 @@
             background-color: var(--primary-dark);
         }
 
-        /* コース選択チップ（色漏れ完全解消：シャドウ廃止・クリーンボーダー） */
+        /* コース選択チップ（色漏れ完全解消） */
         .course-strip {
             display: flex;
             align-items: center;
@@ -650,7 +650,7 @@
             text-decoration: underline;
         }
 
-        /* 空き状況マトリクス（残り画面高に自動フィット） */
+        /* 空き状況マトリクス */
         .matrix-card {
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
@@ -811,7 +811,7 @@
         }
 
         /* =========================================================
-           予約一覧ビュー
+           管理者専用 予約一覧ビュー
            ========================================================= */
         #listView {
             overflow-y: auto;
@@ -819,7 +819,7 @@
 
         .list-inner {
             width: 100%;
-            max-width: 860px;
+            max-width: 920px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -905,23 +905,24 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
             padding-top: 8px;
             margin-top: auto;
             border-top: 1px dashed var(--border-color);
         }
 
         .btn-line-share {
-            height: 32px;
-            padding: 0 12px;
+            height: 30px;
+            padding: 0 10px;
             border-radius: var(--radius-sm);
             background-color: var(--line-green);
             color: #ffffff;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             background-clip: padding-box;
         }
 
@@ -929,14 +930,32 @@
             opacity: 0.9;
         }
 
+        .btn-edit {
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background-color: #fafafa;
+            color: var(--text-main);
+            font-size: 11px;
+            font-weight: 700;
+            background-clip: padding-box;
+        }
+
+        .btn-edit:hover {
+            border-color: var(--primary-border);
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
         .btn-cancel {
-            height: 32px;
-            padding: 0 12px;
+            height: 30px;
+            padding: 0 10px;
             border-radius: var(--radius-sm);
             border: 1px solid #fecdd3;
             background-color: #fff1f2;
             color: #e11d48;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             background-clip: padding-box;
         }
@@ -993,7 +1012,7 @@
         }
 
         /* =========================================================
-           モーダル（予約入力 & 管理パスワード認証）
+           モーダル（予約入力・編集 & 管理パスワード認証）
            ========================================================= */
         .modal-backdrop {
             position: fixed;
@@ -1252,7 +1271,7 @@
                     <button id="adminToggleBtn" class="icon-btn" type="button">
                         <span data-i18n="adminBtn">管理</span>
                     </button>
-                    <button id="notifBtn" class="icon-btn square" type="button" aria-label="Notifications">
+                    <button id="notifBtn" class="icon-btn square hidden" type="button" aria-label="Notifications">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -1262,18 +1281,19 @@
                 </div>
             </div>
 
-            <nav class="main-tabs" aria-label="Main Tabs">
+            <!-- 管理者専用タブバー（一般ユーザーには非表示） -->
+            <nav id="adminTabs" class="main-tabs hidden" aria-label="Admin Tabs">
                 <button id="tabCalendar" class="tab-btn active" type="button">
-                    <span data-i18n="tabCalendar">空き状況・Web予約</span>
+                    <span data-i18n="tabCalendar">空き状況・枠管理</span>
                 </button>
                 <button id="tabList" class="tab-btn" type="button">
-                    <span data-i18n="tabList">予約一覧</span>
+                    <span data-i18n="tabList">予約一覧（管理者専用）</span>
                     <span id="tabBookingCount" class="tab-count">0</span>
                 </button>
             </nav>
         </header>
 
-        <!-- カレンダービュー -->
+        <!-- カレンダービュー（一般ユーザーはここだけ利用） -->
         <main id="calendarView" class="view-section">
             <div id="calendarTopStack" class="calendar-top-stack">
                 <section class="salon-info-card">
@@ -1283,7 +1303,7 @@
                     </div>
                     <div class="legend-pills">
                         <span class="legend-item"><span class="mark-ok-sample">◎</span> <span data-i18n="legendOk">空きあり</span></span>
-                        <span class="legend-item"><span class="mark-booked-sample" data-i18n="markBookedShort">予</span> <span data-i18n="legendBooked">予約済</span></span>
+                        <span id="legendBookedItem" class="legend-item hidden"><span class="mark-booked-sample" data-i18n="markBookedShort">予</span> <span data-i18n="legendBooked">予約済</span></span>
                         <span class="legend-item"><span class="mark-ng-sample">×</span> <span data-i18n="legendNg">満席</span></span>
                     </div>
                 </section>
@@ -1291,7 +1311,7 @@
                 <!-- 管理モードバー -->
                 <div id="adminBanner" class="admin-banner hidden">
                     <div class="admin-banner-row">
-                        <div><strong data-i18n="adminOnTitle">管理モードON：</strong><span data-i18n="adminOnDesc">枠をタップすると「◎ 空き」と「× 受付停止」を切り替えられます。</span></div>
+                        <div><strong data-i18n="adminOnTitle">管理モードON：</strong><span data-i18n="adminOnDesc">枠をタップで空き/満席を切替、上部タブから予約一覧の確認・編集ができます。</span></div>
                         <button id="resetDataBtn" class="admin-btn" type="button" data-i18n="resetBtn">全データ初期化</button>
                     </div>
                     <div class="admin-gas-row">
@@ -1325,12 +1345,12 @@
             </div>
         </main>
 
-        <!-- 予約一覧ビュー -->
+        <!-- 予約一覧ビュー（管理者モード時のみ表示） -->
         <section id="listView" class="view-section hidden">
             <div class="list-inner">
                 <div class="list-header-bar">
-                    <h2 class="list-title" data-i18n="listTitle">確定済みの入室予約</h2>
-                    <button id="goCalendarFromListBtn" class="icon-btn" type="button" data-i18n="newBookingBtn">＋ 新規予約</button>
+                    <h2 class="list-title" data-i18n="listTitle">確定済みの入室予約（管理者専用）</h2>
+                    <button id="goCalendarFromListBtn" class="icon-btn" type="button" data-i18n="newBookingBtn">＋ カレンダーへ</button>
                 </div>
                 <div id="bookingListContainer" class="booking-list"></div>
             </div>
@@ -1341,11 +1361,11 @@
         </footer>
     </div>
 
-    <!-- 予約入力モーダル -->
+    <!-- 予約入力・編集モーダル -->
     <div id="bookingModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
         <div class="modal-card">
             <div class="modal-header">
-                <h3 class="modal-title" data-i18n="modalTitle">入室予約の確認・入力</h3>
+                <h3 id="bookingModalTitle" class="modal-title" data-i18n="modalTitle">入室予約の確認・入力</h3>
                 <button id="closeModalBtn" class="modal-close" type="button" aria-label="Close">×</button>
             </div>
             <form id="bookingForm">
@@ -1425,10 +1445,10 @@
                Google Apps Script (gas/Code.gs) のウェブアプリURLを
                DEFAULT_GAS_WEB_APP_URL に貼り付けて公開してください。
                ========================================================= */
-            const DEFAULT_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzzEojGIYjx31O-q0yaQI0J8dLVwxx1GhF4mWSgdjvXHHapVQuMiYTafo6Flq__yNHr/exec';
+            const DEFAULT_GAS_WEB_APP_URL = '';
             const ADMIN_PASSCODE = '1107';
 
-            const STORAGE_DATA_KEY = 'bedroom_salon_cache_v2';
+            const STORAGE_DATA_KEY = 'bedroom_salon_cache_v3';
             const STORAGE_LANG_KEY = 'bedroom_salon_lang_v2';
             const STORAGE_GAS_KEY = 'bedroom_salon_gas_url_v2';
 
@@ -1447,8 +1467,8 @@
                     brandSub: 'PRIVATE BEDROOM SALON',
                     brandTitle: '寝室入室 予約フォーム',
                     adminBtn: '管理',
-                    tabCalendar: '空き状況・Web予約',
-                    tabList: '予約一覧',
+                    tabCalendar: '空き状況・枠管理',
+                    tabList: '予約一覧（管理者専用）',
                     bannerTitle: 'ご希望の日時をタップしてご予約ください',
                     bannerSub: '受付時間：20:00〜25:00（30分刻み・当日予約OK）',
                     legendOk: '空きあり',
@@ -1456,17 +1476,18 @@
                     legendNg: '満席',
                     markBookedShort: '予',
                     adminOnTitle: '管理モードON：',
-                    adminOnDesc: '枠をタップすると「◎ 空き」と「× 受付停止」を切り替えられます。',
+                    adminOnDesc: '枠をタップで空き/満席を切替、上部タブから予約一覧の確認・編集ができます。',
                     resetBtn: '全データ初期化',
                     saveGasBtn: 'GAS URLを保存して同期',
                     prevWeek: '‹ 前の週',
                     nextWeek: '次の週 ›',
                     backToday: '今週へ戻る',
                     timeCol: '時間',
-                    listTitle: '確定済みの入室予約',
-                    newBookingBtn: '＋ 新規予約',
+                    listTitle: '確定済みの入室予約（管理者専用）',
+                    newBookingBtn: '＋ カレンダーへ',
                     footerText: '寝室入室 予約フォーム（Googleスプレッドシート連携対応）',
                     modalTitle: '入室予約の確認・入力',
+                    modalEditTitle: '予約内容の編集（管理者）',
                     selectedSlotLabel: '選択中の日時',
                     nameLabel: 'お名前（ニックネーム可）',
                     namePlaceholder: '例：かずや',
@@ -1478,6 +1499,7 @@
                     optTag: '任意',
                     cancelBtn: 'キャンセル',
                     submitBtn: 'この内容で予約する',
+                    saveEditBtn: '変更を保存する',
                     submittingBtn: '送信中...',
                     authTitle: '管理モード認証',
                     authLabel: '管理者パスワードを入力してください',
@@ -1485,12 +1507,13 @@
                     authError: 'パスワードが違います',
                     authSubmit: 'ログイン',
                     emptyTitle: 'まだ入室予約がありません',
-                    emptyDesc: 'カレンダーの「◎」マークをタップすると、かんたんにWeb予約できます。',
-                    emptyBtn: '空き状況を見る',
+                    emptyDesc: '新しい予約が入ると、ここに一覧表示されます。',
+                    emptyBtn: 'カレンダーを見る',
                     cardName: 'お名前',
                     cardLighting: '環境',
-                    shareBtn: 'LINE用テキストをコピー',
-                    cancelBookingBtn: '予約をキャンセル',
+                    shareBtn: 'LINE共有コピー',
+                    editBtn: '編集',
+                    cancelBookingBtn: '削除',
                     syncLocal: 'ローカル保存',
                     syncSynced: 'Sheets同期済',
                     syncSyncing: '同期中...',
@@ -1509,13 +1532,14 @@
                         bright: '明るめ（少し会話したい）'
                     },
                     toastBookedTitle: '予約を受け付けました',
-                    toastCanceledTitle: '予約をキャンセルしました',
+                    toastUpdatedTitle: '予約内容を更新しました',
+                    toastCanceledTitle: '予約を削除しました',
                     toastCopiedTitle: 'コピーしました',
                     toastCopiedMsg: 'LINE等にそのまま貼り付けて共有できます',
                     toastAdminOn: '管理モードON',
-                    toastAdminOnMsg: '枠をタップして空き状況を編集できます',
+                    toastAdminOnMsg: '予約一覧の確認・編集と空き枠管理が使えます',
                     toastAdminOff: '管理モードOFF',
-                    toastAdminOffMsg: '通常の予約モードに戻りました',
+                    toastAdminOffMsg: '一般予約モードに戻りました',
                     toastReset: '初期化完了',
                     toastResetMsg: 'すべての予約と満席枠をリセットしました',
                     toastSyncOk: '同期完了',
@@ -1536,8 +1560,8 @@
                     brandSub: 'PRIVATE BEDROOM SALON',
                     brandTitle: 'Bedroom Entry Booking',
                     adminBtn: 'Admin',
-                    tabCalendar: 'Availability',
-                    tabList: 'Bookings',
+                    tabCalendar: 'Availability & Slots',
+                    tabList: 'Bookings (Admin)',
                     bannerTitle: 'Tap an available time slot to book',
                     bannerSub: 'Hours: 20:00–25:00 (30-min intervals · Same-day OK)',
                     legendOk: 'Open',
@@ -1545,17 +1569,18 @@
                     legendNg: 'Closed',
                     markBookedShort: 'B',
                     adminOnTitle: 'Admin Mode ON: ',
-                    adminOnDesc: 'Tap any slot to toggle between Open (◎) and Closed (×).',
+                    adminOnDesc: 'Tap slots to toggle Open/Closed, or switch tabs to view & edit bookings.',
                     resetBtn: 'Reset All',
                     saveGasBtn: 'Save GAS URL & Sync',
                     prevWeek: '‹ Prev',
                     nextWeek: 'Next ›',
                     backToday: 'This Week',
                     timeCol: 'Time',
-                    listTitle: 'Confirmed Bookings',
-                    newBookingBtn: '+ New Booking',
+                    listTitle: 'Confirmed Bookings (Admin)',
+                    newBookingBtn: '+ Calendar',
                     footerText: 'Bedroom Entry Booking (Google Sheets Sync Ready)',
                     modalTitle: 'New Bedroom Booking',
+                    modalEditTitle: 'Edit Booking (Admin)',
                     selectedSlotLabel: 'Selected Date & Time',
                     nameLabel: 'Your Name (Nickname OK)',
                     namePlaceholder: 'e.g. Kazuya',
@@ -1567,6 +1592,7 @@
                     optTag: 'Optional',
                     cancelBtn: 'Cancel',
                     submitBtn: 'Confirm Booking',
+                    saveEditBtn: 'Save Changes',
                     submittingBtn: 'Saving...',
                     authTitle: 'Admin Verification',
                     authLabel: 'Enter admin passcode',
@@ -1574,12 +1600,13 @@
                     authError: 'Incorrect passcode',
                     authSubmit: 'Unlock',
                     emptyTitle: 'No bookings yet',
-                    emptyDesc: 'Tap any ◎ slot on the calendar to make a reservation.',
+                    emptyDesc: 'Incoming reservations will appear here.',
                     emptyBtn: 'View Calendar',
                     cardName: 'Name',
                     cardLighting: 'Lighting',
-                    shareBtn: 'Copy Share Text',
-                    cancelBookingBtn: 'Cancel',
+                    shareBtn: 'Copy Share',
+                    editBtn: 'Edit',
+                    cancelBookingBtn: 'Delete',
                     syncLocal: 'Local Mode',
                     syncSynced: 'Sheets Synced',
                     syncSyncing: 'Syncing...',
@@ -1598,13 +1625,14 @@
                         bright: 'Bright (For Chatting)'
                     },
                     toastBookedTitle: 'Booking Confirmed',
-                    toastCanceledTitle: 'Booking Canceled',
+                    toastUpdatedTitle: 'Booking Updated',
+                    toastCanceledTitle: 'Booking Deleted',
                     toastCopiedTitle: 'Copied',
                     toastCopiedMsg: 'Ready to paste into LINE or chat',
                     toastAdminOn: 'Admin Mode ON',
-                    toastAdminOnMsg: 'Tap slots to toggle availability',
+                    toastAdminOnMsg: 'Bookings list and slot controls unlocked',
                     toastAdminOff: 'Admin Mode OFF',
-                    toastAdminOffMsg: 'Returned to normal booking mode',
+                    toastAdminOffMsg: 'Returned to guest booking mode',
                     toastReset: 'Reset Complete',
                     toastResetMsg: 'Cleared all bookings and closed slots',
                     toastSyncOk: 'Synced',
@@ -1625,8 +1653,8 @@
                     brandSub: 'PRIVATE BEDROOM SALON',
                     brandTitle: '침실 입장 예약 폼',
                     adminBtn: '관리',
-                    tabCalendar: '예약 현황',
-                    tabList: '예약 목록',
+                    tabCalendar: '예약 현황·관리',
+                    tabList: '예약 목록 (관리자)',
                     bannerTitle: '원하는 날짜와 시간을 탭해 예약하세요',
                     bannerSub: '접수 시간: 20:00~25:00 (30분 단위 · 당일 예약 가능)',
                     legendOk: '예약 가능',
@@ -1634,17 +1662,18 @@
                     legendNg: '마감',
                     markBookedShort: '예',
                     adminOnTitle: '관리 모드 ON: ',
-                    adminOnDesc: '시간 칸을 탭하면 가능(◎) / 마감(×)을 전환할 수 있습니다.',
+                    adminOnDesc: '칸을 탭해 가능/마감을 전환하거나 상단 탭에서 예약 목록을 관리하세요.',
                     resetBtn: '전체 초기화',
                     saveGasBtn: 'GAS URL 저장 및 동기화',
                     prevWeek: '‹ 이전 주',
                     nextWeek: '다음 주 ›',
                     backToday: '이번 주로',
                     timeCol: '시간',
-                    listTitle: '확정된 입장 예약',
-                    newBookingBtn: '+ 새 예약',
+                    listTitle: '확정된 입장 예약 (관리자 전용)',
+                    newBookingBtn: '+ 달력으로',
                     footerText: '침실 입장 예약 폼 (Google 스프레드시트 연동 지원)',
                     modalTitle: '입장 예약 입력',
+                    modalEditTitle: '예약 내용 수정 (관리자)',
                     selectedSlotLabel: '선택한 일시',
                     nameLabel: '이름 (닉네임 가능)',
                     namePlaceholder: '예: 카즈야',
@@ -1656,6 +1685,7 @@
                     optTag: '선택',
                     cancelBtn: '취소',
                     submitBtn: '예약 확정하기',
+                    saveEditBtn: '변경 사항 저장',
                     submittingBtn: '전송 중...',
                     authTitle: '관리 모드 인증',
                     authLabel: '관리자 비밀번호를 입력하세요',
@@ -1663,12 +1693,13 @@
                     authError: '비밀번호가 올바르지 않습니다',
                     authSubmit: '로그인',
                     emptyTitle: '아직 예약이 없습니다',
-                    emptyDesc: '달력의 ◎ 표시를 탭하면 간편하게 예약할 수 있습니다.',
+                    emptyDesc: '새 예약이 들어오면 여기에 표시됩니다.',
                     emptyBtn: '예약 현황 보기',
                     cardName: '이름',
                     cardLighting: '환경',
-                    shareBtn: '공유 텍스트 복사',
-                    cancelBookingBtn: '예약 취소',
+                    shareBtn: '공유 복사',
+                    editBtn: '수정',
+                    cancelBookingBtn: '삭제',
                     syncLocal: '로컬 저장',
                     syncSynced: '시트 동기화됨',
                     syncSyncing: '동기화 중...',
@@ -1687,11 +1718,12 @@
                         bright: '밝게 (대화 원함)'
                     },
                     toastBookedTitle: '예약이 완료되었습니다',
-                    toastCanceledTitle: '예약이 취소되었습니다',
+                    toastUpdatedTitle: '예약이 수정되었습니다',
+                    toastCanceledTitle: '예약이 삭제되었습니다',
                     toastCopiedTitle: '복사 완료',
                     toastCopiedMsg: 'LINE이나 메신저에 바로 붙여넣을 수 있습니다',
                     toastAdminOn: '관리 모드 ON',
-                    toastAdminOnMsg: '칸을 탭하여 예약 가능 여부를 변경하세요',
+                    toastAdminOnMsg: '예약 목록 관리 및 마감 편집이 활성화되었습니다',
                     toastAdminOff: '관리 모드 OFF',
                     toastAdminOffMsg: '일반 예약 모드로 돌아왔습니다',
                     toastReset: '초기화 완료',
@@ -1714,8 +1746,8 @@
                     brandSub: 'PRIVATE BEDROOM SALON',
                     brandTitle: '卧室进入预约表单',
                     adminBtn: '管理',
-                    tabCalendar: '空位预约',
-                    tabList: '预约列表',
+                    tabCalendar: '空位与时段管理',
+                    tabList: '预约列表（管理员）',
                     bannerTitle: '点击空闲时段即可预约',
                     bannerSub: '接待时间：20:00〜25:00（每30分钟 · 可当天预约）',
                     legendOk: '可预约',
@@ -1723,17 +1755,18 @@
                     legendNg: '已满',
                     markBookedShort: '约',
                     adminOnTitle: '管理模式已开启：',
-                    adminOnDesc: '点击时段可切换“◎ 可预约”与“× 暂停接待”。',
+                    adminOnDesc: '点击时段切换可预约状态，或切换顶部标签查看和编辑预约列表。',
                     resetBtn: '清空全部数据',
                     saveGasBtn: '保存 GAS URL 并同步',
                     prevWeek: '‹ 上周',
                     nextWeek: '下周 ›',
                     backToday: '回到本周',
                     timeCol: '时间',
-                    listTitle: '已确认的进入预约',
-                    newBookingBtn: '+ 新增预约',
+                    listTitle: '已确认的进入预约（管理员专用）',
+                    newBookingBtn: '+ 返回日历',
                     footerText: '卧室进入预约表单（支持 Google 表格云端同步）',
                     modalTitle: '填写进入预约',
+                    modalEditTitle: '编辑预约内容（管理员）',
                     selectedSlotLabel: '已选日期时间',
                     nameLabel: '姓名（可使用昵称）',
                     namePlaceholder: '例：Kazuya',
@@ -1745,6 +1778,7 @@
                     optTag: '选填',
                     cancelBtn: '取消',
                     submitBtn: '确认预约',
+                    saveEditBtn: '保存修改',
                     submittingBtn: '提交中...',
                     authTitle: '管理模式验证',
                     authLabel: '请输入管理员密码',
@@ -1752,12 +1786,13 @@
                     authError: '密码错误',
                     authSubmit: '解锁',
                     emptyTitle: '暂无预约记录',
-                    emptyDesc: '点击日历上的“◎”即可快速完成在线预约。',
-                    emptyBtn: '查看空位',
+                    emptyDesc: '收到新预约后会显示在这里。',
+                    emptyBtn: '查看日历',
                     cardName: '姓名',
                     cardLighting: '环境',
-                    shareBtn: '复制分享文本',
-                    cancelBookingBtn: '取消预约',
+                    shareBtn: '复制分享',
+                    editBtn: '编辑',
+                    cancelBookingBtn: '删除',
                     syncLocal: '本地模式',
                     syncSynced: '已同步表格',
                     syncSyncing: '同步中...',
@@ -1776,11 +1811,12 @@
                         bright: '明亮（想聊会儿天）'
                     },
                     toastBookedTitle: '预约成功',
-                    toastCanceledTitle: '已取消预约',
+                    toastUpdatedTitle: '预约已更新',
+                    toastCanceledTitle: '已删除预约',
                     toastCopiedTitle: '已复制',
                     toastCopiedMsg: '可直接粘贴发送至 LINE 或微信',
                     toastAdminOn: '管理模式已开启',
-                    toastAdminOnMsg: '点击时段即可修改可预约状态',
+                    toastAdminOnMsg: '现可查看编辑预约列表及调整时段',
                     toastAdminOff: '管理模式已关闭',
                     toastAdminOffMsg: '已恢复普通预约模式',
                     toastReset: '已重置',
@@ -1803,8 +1839,8 @@
                     brandSub: 'PRIVATE BEDROOM SALON',
                     brandTitle: 'Đặt Lịch Vào Phòng Ngủ',
                     adminBtn: 'Quản trị',
-                    tabCalendar: 'Lịch trống',
-                    tabList: 'Đã đặt',
+                    tabCalendar: 'Lịch & Quản lý ô',
+                    tabList: 'Danh sách đặt (Quản trị)',
                     bannerTitle: 'Chạm vào khung giờ trống để đặt lịch',
                     bannerSub: 'Giờ nhận: 20:00–25:00 (mỗi 30 phút · Đặt trong ngày OK)',
                     legendOk: 'Còn trống',
@@ -1812,17 +1848,18 @@
                     legendNg: 'Kín lịch',
                     markBookedShort: 'Đ',
                     adminOnTitle: 'Chế độ quản trị BẬT: ',
-                    adminOnDesc: 'Chạm vào ô giờ để đổi giữa Trống (◎) và Khóa (×).',
+                    adminOnDesc: 'Chạm vào ô giờ để đổi Trống/Khóa, hoặc xem & sửa danh sách đặt ở tab trên.',
                     resetBtn: 'Đặt lại tất cả',
                     saveGasBtn: 'Lưu GAS URL & Đồng bộ',
                     prevWeek: '‹ Tuần trước',
                     nextWeek: 'Tuần sau ›',
                     backToday: 'Tuần này',
                     timeCol: 'Giờ',
-                    listTitle: 'Danh sách lịch đã đặt',
-                    newBookingBtn: '+ Đặt mới',
+                    listTitle: 'Danh sách lịch đã đặt (Quản trị)',
+                    newBookingBtn: '+ Xem lịch',
                     footerText: 'Đặt Lịch Vào Phòng Ngủ (Hỗ trợ đồng bộ Google Sheets)',
                     modalTitle: 'Xác nhận đặt lịch',
+                    modalEditTitle: 'Chỉnh sửa lịch đặt (Quản trị)',
                     selectedSlotLabel: 'Ngày giờ đã chọn',
                     nameLabel: 'Tên của bạn (biệt danh OK)',
                     namePlaceholder: 'VD: Kazuya',
@@ -1834,6 +1871,7 @@
                     optTag: 'Tùy chọn',
                     cancelBtn: 'Hủy',
                     submitBtn: 'Xác nhận đặt lịch',
+                    saveEditBtn: 'Lưu thay đổi',
                     submittingBtn: 'Đang lưu...',
                     authTitle: 'Xác thực quản trị',
                     authLabel: 'Nhập mật khẩu quản trị viên',
@@ -1841,12 +1879,13 @@
                     authError: 'Mật khẩu không đúng',
                     authSubmit: 'Mở khóa',
                     emptyTitle: 'Chưa có lịch đặt nào',
-                    emptyDesc: 'Chạm vào dấu ◎ trên lịch để đặt chỗ nhanh chóng.',
-                    emptyBtn: 'Xem lịch trống',
+                    emptyDesc: 'Các lịch đặt mới sẽ hiển thị tại đây.',
+                    emptyBtn: 'Xem lịch',
                     cardName: 'Tên',
                     cardLighting: 'Ánh sáng',
-                    shareBtn: 'Sao chép tin nhắn',
-                    cancelBookingBtn: 'Hủy lịch',
+                    shareBtn: 'Sao chép',
+                    editBtn: 'Sửa',
+                    cancelBookingBtn: 'Xóa',
                     syncLocal: 'Lưu cục bộ',
                     syncSynced: 'Đã đồng bộ',
                     syncSyncing: 'Đang đồng bộ...',
@@ -1865,11 +1904,12 @@
                         bright: 'Sáng (muốn trò chuyện)'
                     },
                     toastBookedTitle: 'Đặt lịch thành công',
-                    toastCanceledTitle: 'Đã hủy lịch đặt',
+                    toastUpdatedTitle: 'Đã cập nhật lịch đặt',
+                    toastCanceledTitle: 'Đã xóa lịch đặt',
                     toastCopiedTitle: 'Đã sao chép',
                     toastCopiedMsg: 'Có thể dán trực tiếp vào LINE hoặc tin nhắn',
                     toastAdminOn: 'Chế độ quản trị BẬT',
-                    toastAdminOnMsg: 'Chạm vào các khung giờ để chỉnh sửa trạng thái',
+                    toastAdminOnMsg: 'Đã mở khóa danh sách đặt và chỉnh sửa ô giờ',
                     toastAdminOff: 'Chế độ quản trị TẮT',
                     toastAdminOffMsg: 'Đã quay lại chế độ đặt lịch thường',
                     toastReset: 'Đã đặt lại',
@@ -1896,9 +1936,11 @@
                 selectedCourse: 'normal',
                 activeTab: 'calendar',
                 pendingSlot: null,
+                editingBookingId: null,
                 gasUrl: '',
                 syncStatus: 'local',
                 bookings: [],
+                bookedSlots: {},
                 blockedSlots: {}
             };
 
@@ -1911,7 +1953,9 @@
                 syncText: document.getElementById('syncText'),
                 langSelect: document.getElementById('langSelect'),
                 adminToggleBtn: document.getElementById('adminToggleBtn'),
+                adminTabs: document.getElementById('adminTabs'),
                 adminBanner: document.getElementById('adminBanner'),
+                legendBookedItem: document.getElementById('legendBookedItem'),
                 gasUrlInput: document.getElementById('gasUrlInput'),
                 saveGasUrlBtn: document.getElementById('saveGasUrlBtn'),
                 resetDataBtn: document.getElementById('resetDataBtn'),
@@ -1932,6 +1976,7 @@
                 bookingListContainer: document.getElementById('bookingListContainer'),
                 goCalendarFromListBtn: document.getElementById('goCalendarFromListBtn'),
                 bookingModal: document.getElementById('bookingModal'),
+                bookingModalTitle: document.getElementById('bookingModalTitle'),
                 bookingForm: document.getElementById('bookingForm'),
                 closeModalBtn: document.getElementById('closeModalBtn'),
                 cancelModalBtn: document.getElementById('cancelModalBtn'),
@@ -2043,6 +2088,14 @@
                 return t().lighting[keyOrRaw] || keyOrRaw;
             }
 
+            function rebuildBookedMapFromBookings() {
+                const map = {};
+                state.bookings.forEach(b => {
+                    map[slotKey(b.date, b.time)] = true;
+                });
+                state.bookedSlots = map;
+            }
+
             function showToast(title, msg) {
                 els.toastTitle.textContent = title;
                 els.toastMsg.textContent = msg;
@@ -2074,6 +2127,7 @@
                 try {
                     localStorage.setItem(STORAGE_DATA_KEY, JSON.stringify({
                         bookings: state.bookings,
+                        bookedSlots: state.bookedSlots,
                         blockedSlots: state.blockedSlots
                     }));
                 } catch (_) {}
@@ -2092,7 +2146,11 @@
                     if (raw) {
                         const parsed = JSON.parse(raw);
                         state.bookings = Array.isArray(parsed.bookings) ? parsed.bookings : [];
+                        state.bookedSlots = parsed.bookedSlots && typeof parsed.bookedSlots === 'object' ? parsed.bookedSlots : {};
                         state.blockedSlots = parsed.blockedSlots && typeof parsed.blockedSlots === 'object' ? parsed.blockedSlots : {};
+                        if (Object.keys(state.bookedSlots).length === 0 && state.bookings.length > 0) {
+                            rebuildBookedMapFromBookings();
+                        }
                         return;
                     }
                 } catch (_) {}
@@ -2111,6 +2169,22 @@
                 };
             }
 
+            function applyServerData(data) {
+                if (!data) return;
+                if (Array.isArray(data.bookings)) {
+                    state.bookings = data.bookings;
+                }
+                if (data.bookedSlots && typeof data.bookedSlots === 'object') {
+                    state.bookedSlots = data.bookedSlots;
+                } else if (Array.isArray(data.bookings)) {
+                    rebuildBookedMapFromBookings();
+                }
+                if (data.blockedSlots && typeof data.blockedSlots === 'object') {
+                    state.blockedSlots = data.blockedSlots;
+                }
+                saveLocalCache();
+            }
+
             async function fetchFromSheets(showSuccessToast = false) {
                 if (!state.gasUrl) {
                     setSyncStatus('local');
@@ -2118,19 +2192,34 @@
                 }
                 setSyncStatus('syncing');
                 try {
-                    const res = await fetch(`${state.gasUrl}?t=${Date.now()}`, {
-                        method: 'GET',
-                        redirect: 'follow'
-                    });
-                    const data = await res.json();
+                    let data;
+                    if (state.adminMode) {
+                        const res = await fetch(state.gasUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({ action: 'get_admin_data', adminPassword: ADMIN_PASSCODE }),
+                            redirect: 'follow'
+                        });
+                        data = await res.json();
+                        // 旧バージョンのGASだった場合はGETにフォールバック
+                        if (!data || !data.ok) {
+                            const fallback = await fetch(`${state.gasUrl}?t=${Date.now()}`, { method: 'GET', redirect: 'follow' });
+                            data = await fallback.json();
+                        }
+                    } else {
+                        const res = await fetch(`${state.gasUrl}?t=${Date.now()}`, {
+                            method: 'GET',
+                            redirect: 'follow'
+                        });
+                        data = await res.json();
+                    }
+
                     if (!data || !data.ok) throw new Error((data && data.error) || 'FETCH_ERROR');
 
-                    state.bookings = Array.isArray(data.bookings) ? data.bookings : [];
-                    state.blockedSlots = data.blockedSlots && typeof data.blockedSlots === 'object' ? data.blockedSlots : {};
-                    saveLocalCache();
+                    applyServerData(data);
                     updateCounts();
                     renderCalendar();
-                    renderBookingList();
+                    if (state.adminMode) renderBookingList();
                     setSyncStatus('synced');
                     if (showSuccessToast) showToast(t().toastSyncOk, t().toastSyncOkMsg);
                 } catch (_) {
@@ -2150,11 +2239,7 @@
                         redirect: 'follow'
                     });
                     const data = await res.json();
-                    if (data && Array.isArray(data.bookings)) {
-                        state.bookings = data.bookings;
-                        state.blockedSlots = data.blockedSlots || {};
-                        saveLocalCache();
-                    }
+                    if (data) applyServerData(data);
                     setSyncStatus(data && data.ok ? 'synced' : 'error');
                     return data;
                 } catch (_) {
@@ -2205,7 +2290,7 @@
 
                 setSyncStatus(state.syncStatus);
                 renderCalendar();
-                renderBookingList();
+                if (state.adminMode) renderBookingList();
                 requestAnimationFrame(updateViewportLayout);
             }
 
@@ -2258,19 +2343,23 @@
                         const dateStr = formatDateKey(d);
                         const key = slotKey(dateStr, time);
                         const booking = findBooking(dateStr, time);
+                        const isBooked = Boolean(booking || state.bookedSlots[key]);
                         const isBlocked = Boolean(state.blockedSlots[key]);
 
-                        if (booking) {
+                        if (isBooked && state.adminMode) {
+                            // 管理者モードのみ「予＋名前」を表示し、クリックで予約一覧へ
+                            const labelName = booking ? booking.name : '';
                             bodyHtml += `
                                 <td class="slot-cell">
                                     <button type="button" class="slot-btn status-booked"
                                         data-date="${dateStr}" data-time="${time}" data-state="booked">
                                         <span>${escapeHtml(dict.markBookedShort)}</span>
-                                        <span class="slot-booked-name">${escapeHtml(booking.name)}</span>
+                                        ${labelName ? `<span class="slot-booked-name">${escapeHtml(labelName)}</span>` : ''}
                                     </button>
                                 </td>
                             `;
-                        } else if (isBlocked) {
+                        } else if (isBooked || isBlocked) {
+                            // 一般ユーザーには予約済みも「× 満席」として表示（個人情報非公開・編集不可）
                             bodyHtml += `
                                 <td class="slot-cell">
                                     <button type="button" class="slot-btn status-ng"
@@ -2297,6 +2386,7 @@
             }
 
             function renderBookingList() {
+                if (!state.adminMode) return;
                 const dict = t();
                 if (state.bookings.length === 0) {
                     els.bookingListContainer.innerHTML = `
@@ -2329,6 +2419,7 @@
                         ${b.memo ? `<div class="booking-memo">${escapeHtml(b.memo)}</div>` : ''}
                         <div class="booking-actions">
                             <button type="button" class="btn-line-share" data-share-id="${escapeHtml(b.id)}">${escapeHtml(dict.shareBtn)}</button>
+                            <button type="button" class="btn-edit" data-edit-id="${escapeHtml(b.id)}">${escapeHtml(dict.editBtn)}</button>
                             <button type="button" class="btn-cancel" data-cancel-id="${escapeHtml(b.id)}">${escapeHtml(dict.cancelBookingBtn)}</button>
                         </div>
                     </article>
@@ -2336,6 +2427,8 @@
             }
 
             function switchTab(tab) {
+                // 一般ユーザーは予約一覧タブに遷移不可
+                if (tab === 'list' && !state.adminMode) return;
                 state.activeTab = tab;
                 const isCal = tab === 'calendar';
                 els.tabCalendar.classList.toggle('active', isCal);
@@ -2346,16 +2439,32 @@
                 requestAnimationFrame(updateViewportLayout);
             }
 
-            function openBookingModal(dateStr, timeStr) {
+            function openBookingModal(dateStr, timeStr, existingBooking = null) {
                 state.pendingSlot = { date: dateStr, time: timeStr };
+                state.editingBookingId = existingBooking ? existingBooking.id : null;
+                els.bookingModalTitle.textContent = existingBooking ? t().modalEditTitle : t().modalTitle;
+                els.submitBookingBtn.textContent = existingBooking ? t().saveEditBtn : t().submitBtn;
                 els.modalSlotText.textContent = `${formatDisplayDate(dateStr)} ${timeStr}〜`;
-                els.courseSelect.value = state.selectedCourse;
+
+                if (existingBooking) {
+                    els.guestName.value = existingBooking.name || '';
+                    els.courseSelect.value = COURSE_KEYS.includes(existingBooking.course) ? existingBooking.course : 'normal';
+                    els.lightingPref.value = LIGHTING_KEYS.includes(existingBooking.lighting) ? existingBooking.lighting : 'auto';
+                    els.guestMemo.value = existingBooking.memo || '';
+                } else {
+                    els.guestName.value = '';
+                    els.courseSelect.value = state.selectedCourse;
+                    els.lightingPref.value = 'auto';
+                    els.guestMemo.value = '';
+                }
+
                 els.bookingModal.classList.remove('hidden');
                 setTimeout(() => els.guestName.focus(), 40);
             }
 
             function closeBookingModal() {
                 state.pendingSlot = null;
+                state.editingBookingId = null;
                 els.bookingModal.classList.add('hidden');
             }
 
@@ -2370,12 +2479,24 @@
                 els.adminAuthModal.classList.add('hidden');
             }
 
-            function setAdminMode(enabled) {
+            async function setAdminMode(enabled) {
                 state.adminMode = enabled;
                 els.adminToggleBtn.classList.toggle('admin-active', enabled);
+                els.adminTabs.classList.toggle('hidden', !enabled);
                 els.adminBanner.classList.toggle('hidden', !enabled);
+                els.notifBtn.classList.toggle('hidden', !enabled);
+                els.legendBookedItem.classList.toggle('hidden', !enabled);
                 els.appShell.classList.toggle('admin-mode', enabled);
+
+                if (!enabled) {
+                    switchTab('calendar');
+                } else if (state.gasUrl) {
+                    await fetchFromSheets(false);
+                }
+
+                updateCounts();
                 renderCalendar();
+                if (enabled) renderBookingList();
                 requestAnimationFrame(updateViewportLayout);
                 showToast(
                     enabled ? t().toastAdminOn : t().toastAdminOff,
@@ -2423,6 +2544,7 @@
             els.tabList.addEventListener('click', () => switchTab('list'));
             els.goCalendarFromListBtn.addEventListener('click', () => switchTab('calendar'));
             els.notifBtn.addEventListener('click', () => {
+                if (!state.adminMode) return;
                 switchTab('list');
                 showToast(t().toastListInfo, t().countMsg(state.bookings.length));
             });
@@ -2464,6 +2586,7 @@
             });
 
             els.resetDataBtn.addEventListener('click', async () => {
+                if (!state.adminMode) return;
                 if (!window.confirm(t().confirmReset)) return;
                 if (state.gasUrl) {
                     const res = await postToSheets({ action: 'reset_all', adminPassword: ADMIN_PASSCODE });
@@ -2473,6 +2596,7 @@
                     }
                 } else {
                     state.bookings = [];
+                    state.bookedSlots = {};
                     state.blockedSlots = {};
                     saveLocalCache();
                 }
@@ -2539,10 +2663,9 @@
                     return;
                 }
 
+                // 一般ユーザーは「◎ 空きあり」のみ予約モーダルを開く
                 if (slotState === 'ok') {
                     openBookingModal(date, time);
-                } else if (slotState === 'booked') {
-                    switchTab('list');
                 }
             });
 
@@ -2558,8 +2681,9 @@
                 const name = els.guestName.value.trim();
                 if (!name) return;
 
-                const newBooking = {
-                    id: String(Date.now()),
+                const isEdit = Boolean(state.editingBookingId && state.adminMode);
+                const payloadBooking = {
+                    id: isEdit ? state.editingBookingId : String(Date.now()),
                     date: state.pendingSlot.date,
                     time: state.pendingSlot.time,
                     name,
@@ -2572,8 +2696,35 @@
                 els.submitBookingBtn.textContent = t().submittingBtn;
 
                 try {
+                    if (isEdit) {
+                        if (state.gasUrl) {
+                            const res = await postToSheets({
+                                action: 'update_booking',
+                                booking: payloadBooking,
+                                adminPassword: ADMIN_PASSCODE
+                            });
+                            if (!res || !res.ok) {
+                                showToast(t().toastSyncErr, t().toastSyncErrMsg);
+                                return;
+                            }
+                        } else {
+                            state.bookings = state.bookings.map(b => b.id === payloadBooking.id ? payloadBooking : b);
+                            saveLocalCache();
+                        }
+                        updateCounts();
+                        renderCalendar();
+                        renderBookingList();
+                        closeBookingModal();
+                        showToast(t().toastUpdatedTitle, `${formatDisplayDate(payloadBooking.date)} ${payloadBooking.time}〜 (${payloadBooking.name})`);
+                        return;
+                    }
+
                     if (state.gasUrl) {
-                        const res = await postToSheets({ action: 'create_booking', booking: newBooking });
+                        const res = await postToSheets({
+                            action: 'create_booking',
+                            booking: payloadBooking,
+                            adminPassword: state.adminMode ? ADMIN_PASSCODE : ''
+                        });
                         if (!res || !res.ok) {
                             const isTaken = res && (res.error === 'SLOT_ALREADY_BOOKED' || res.error === 'SLOT_BLOCKED');
                             showToast(
@@ -2582,34 +2733,43 @@
                             );
                             updateCounts();
                             renderCalendar();
-                            renderBookingList();
+                            if (state.adminMode) renderBookingList();
                             return;
                         }
                     } else {
-                        state.bookings.push(newBooking);
+                        state.bookings.push(payloadBooking);
+                        state.bookedSlots[slotKey(payloadBooking.date, payloadBooking.time)] = true;
                         saveLocalCache();
                     }
 
                     updateCounts();
                     renderCalendar();
-                    renderBookingList();
+                    if (state.adminMode) renderBookingList();
                     closeBookingModal();
-                    els.guestMemo.value = '';
                     showToast(
                         t().toastBookedTitle,
-                        `${formatDisplayDate(newBooking.date)} ${newBooking.time}〜 (${newBooking.name})`
+                        `${formatDisplayDate(payloadBooking.date)} ${payloadBooking.time}〜 (${payloadBooking.name})`
                     );
                 } finally {
                     els.submitBookingBtn.disabled = false;
-                    els.submitBookingBtn.textContent = t().submitBtn;
+                    els.submitBookingBtn.textContent = isEdit ? t().saveEditBtn : t().submitBtn;
                 }
             });
 
             els.bookingListContainer.addEventListener('click', async (e) => {
+                if (!state.adminMode) return;
+
                 const shareBtn = e.target.closest('[data-share-id]');
                 if (shareBtn) {
                     const target = state.bookings.find(b => b.id === shareBtn.dataset.shareId);
                     if (target) copyLineText(target);
+                    return;
+                }
+
+                const editBtn = e.target.closest('[data-edit-id]');
+                if (editBtn) {
+                    const target = state.bookings.find(b => b.id === editBtn.dataset.editId);
+                    if (target) openBookingModal(target.date, target.time, target);
                     return;
                 }
 
@@ -2618,13 +2778,18 @@
                     const id = cancelBtn.dataset.cancelId;
                     const target = state.bookings.find(b => b.id === id);
                     if (state.gasUrl) {
-                        const res = await postToSheets({ action: 'cancel_booking', id });
+                        const res = await postToSheets({
+                            action: 'cancel_booking',
+                            id,
+                            adminPassword: ADMIN_PASSCODE
+                        });
                         if (!res || !res.ok) {
                             showToast(t().toastSyncErr, t().toastSyncErrMsg);
                             return;
                         }
                     } else {
                         state.bookings = state.bookings.filter(b => b.id !== id);
+                        rebuildBookedMapFromBookings();
                         saveLocalCache();
                     }
                     updateCounts();
