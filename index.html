@@ -1,0 +1,2658 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>寝室入室 予約フォーム | サロン風空き状況＆Web予約</title>
+    <style>
+        /* =========================================================
+           ベース・カラー変数＆リセット（外部CDN不要・完全自己完結CSS）
+           ========================================================= */
+        :root {
+            --primary: #e85a71;
+            --primary-dark: #d1435a;
+            --primary-light: #fff5f7;
+            --primary-border: #fad2d9;
+            --accent-gold: #c59b6d;
+            --bg-body: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #2d2a2e;
+            --text-sub: #6e6a70;
+            --text-muted: #9e9aa0;
+            --border-color: #ebe6e8;
+            --sat-color: #2563eb;
+            --sat-bg: #eff6ff;
+            --sun-color: #e11d48;
+            --sun-bg: #fff1f2;
+            --success: #10b981;
+            --line-green: #06c755;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+
+            /* ビューポート可変トークン（JSがブラウザサイズに合わせて動的更新） */
+            --cell-h: 42px;
+            --head-h: 46px;
+            --time-col-w: 72px;
+            --slot-font: 18px;
+            --base-font: 14px;
+            --section-pad-x: 16px;
+            --section-pad-y: 12px;
+            --stack-gap: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100dvh;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Apple SD Gothic Neo", "PingFang SC", Meiryo, sans-serif;
+            font-size: var(--base-font);
+            line-height: 1.45;
+            overflow-x: hidden;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
+            font-size: inherit;
+            color: inherit;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* =========================================================
+           フルフィット・メインコンテナ（ブラウザ画面全体に動的フィット）
+           ========================================================= */
+        .app-shell {
+            width: 100%;
+            min-height: 100dvh;
+            background-color: var(--bg-card);
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.viewport-fit .app-shell {
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* =========================================================
+           ヘッダー＆ナビゲーション
+           ========================================================= */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px var(--section-pad-x);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .brand-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background-color: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-clip: padding-box;
+        }
+
+        .brand-title-wrap {
+            min-width: 0;
+        }
+
+        .brand-sub {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.06em;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .brand-title {
+            font-size: clamp(14px, 1.8vw, 18px);
+            font-weight: 800;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .sync-pill {
+            height: 32px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background-color: #fafafa;
+            color: var(--text-sub);
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+            background-clip: padding-box;
+        }
+
+        .sync-pill:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-border);
+        }
+
+        .sync-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .sync-pill.synced .sync-dot {
+            background-color: var(--success);
+        }
+
+        .sync-pill.syncing .sync-dot {
+            background-color: #f59e0b;
+            animation: pulseDot 0.9s infinite alternate;
+        }
+
+        .sync-pill.error .sync-dot {
+            background-color: var(--sun-color);
+        }
+
+        @keyframes pulseDot {
+            from { opacity: 0.35; }
+            to { opacity: 1; }
+        }
+
+        .lang-select {
+            height: 32px;
+            padding: 0 24px 0 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background-color: #fafafa;
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6a70' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-clip: padding-box;
+        }
+
+        .lang-select:hover,
+        .lang-select:focus {
+            outline: none;
+            border-color: var(--primary-border);
+            background-color: var(--primary-light);
+        }
+
+        /* ボタン類：色漏れ防止のため外側カラーシャドウを使わずフラット＋クリーンボーダー */
+        .icon-btn {
+            height: 32px;
+            padding: 0 11px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background-color: #fafafa;
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            position: relative;
+            background-clip: padding-box;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-border);
+            color: var(--primary);
+        }
+
+        .icon-btn.admin-active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .icon-btn.square {
+            width: 32px;
+            padding: 0;
+        }
+
+        .badge-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background-color: var(--primary);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ffffff;
+        }
+
+        .main-tabs {
+            display: flex;
+            border-top: 1px solid #f4eff1;
+            background-color: #ffffff;
+        }
+
+        .tab-btn {
+            flex: 1;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-sub);
+            border-bottom: 3px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: #fffbfc;
+        }
+
+        .tab-count {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-size: 11px;
+            padding: 1px 7px;
+            border-radius: 999px;
+            font-weight: 800;
+        }
+
+        /* =========================================================
+           通知トースト
+           ========================================================= */
+        .top-toast {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translate(-50%, -140%);
+            width: calc(100% - 24px);
+            max-width: 520px;
+            z-index: 120;
+            background-color: #2d2a2e;
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+        }
+
+        .top-toast.show {
+            transform: translate(-50%, 0);
+            pointer-events: auto;
+        }
+
+        .toast-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .toast-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toast-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #ffb3c0;
+        }
+
+        .toast-msg {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+            word-break: break-word;
+        }
+
+        /* =========================================================
+           ビューセクション（可変レイアウト）
+           ========================================================= */
+        .view-section {
+            padding: var(--section-pad-y) var(--section-pad-x);
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--stack-gap);
+        }
+
+        .calendar-top-stack {
+            display: flex;
+            flex-direction: column;
+            gap: var(--stack-gap);
+            flex-shrink: 0;
+        }
+
+        .salon-info-card {
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .salon-info-text h2 {
+            font-size: clamp(13px, 1.4vw, 15px);
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 1px;
+        }
+
+        .salon-info-text p {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .legend-pills {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            padding: 5px 11px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mark-ok-sample {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .mark-booked-sample {
+            color: var(--success);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .mark-ng-sample {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* 管理モードバー */
+        .admin-banner {
+            background-color: #2d2a2e;
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .admin-banner-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .admin-banner strong {
+            color: #ffb3c0;
+        }
+
+        .admin-gas-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .admin-gas-input {
+            flex: 1 1 240px;
+            height: 30px;
+            padding: 0 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            font-size: 11px;
+        }
+
+        .admin-gas-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .admin-btn {
+            height: 30px;
+            padding: 0 11px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            transition: background-color 0.15s ease;
+        }
+
+        .admin-btn:hover {
+            background-color: rgba(255, 255, 255, 0.28);
+        }
+
+        .admin-btn.primary {
+            background-color: var(--primary);
+        }
+
+        .admin-btn.primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* コース選択チップ（色漏れ完全解消：シャドウ廃止・クリーンボーダー） */
+        .course-strip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 2px 0;
+            scrollbar-width: none;
+            background: transparent;
+        }
+
+        .course-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .course-chip {
+            flex-shrink: 0;
+            padding: 6px 13px;
+            border-radius: 999px;
+            border: 1.5px solid var(--border-color);
+            background-color: #ffffff;
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            box-shadow: none;
+            outline: none;
+            background-clip: padding-box;
+            -webkit-background-clip: padding-box;
+        }
+
+        .course-chip:hover {
+            border-color: var(--primary-border);
+            color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .course-chip.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: none;
+        }
+
+        .course-chip .chip-min {
+            font-size: 10px;
+            opacity: 0.88;
+        }
+
+        /* 週送りコントロール */
+        .week-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background-color: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 6px 10px;
+        }
+
+        .week-nav-btn {
+            height: 30px;
+            padding: 0 12px;
+            border-radius: var(--radius-sm);
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            background-clip: padding-box;
+        }
+
+        .week-nav-btn:hover:not(:disabled) {
+            border-color: var(--primary-border);
+            color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .week-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .week-range-label {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .week-range-main {
+            font-size: clamp(13px, 1.4vw, 15px);
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .week-today-link {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* 空き状況マトリクス（残り画面高に自動フィット） */
+        .matrix-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background-color: #ffffff;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .matrix-scroll {
+            overflow: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .schedule-table {
+            width: 100%;
+            min-width: 480px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .schedule-table th:last-child,
+        .schedule-table td:last-child {
+            border-right: none;
+        }
+
+        .schedule-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .schedule-table thead th {
+            background-color: #fcfafb;
+            height: var(--head-h);
+            padding: 4px;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .schedule-table th.time-col-head {
+            width: var(--time-col-w);
+            font-size: 11px;
+            color: var(--text-sub);
+            background-color: #f8f5f6;
+        }
+
+        .day-head-date {
+            font-size: 13px;
+            font-weight: 800;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .day-head-dow {
+            font-size: 11px;
+            font-weight: 700;
+            display: block;
+            margin-top: 1px;
+        }
+
+        .schedule-table th.is-sat {
+            background-color: var(--sat-bg);
+            color: var(--sat-color);
+        }
+
+        .schedule-table th.is-sun {
+            background-color: var(--sun-bg);
+            color: var(--sun-color);
+        }
+
+        .schedule-table th.is-today {
+            box-shadow: inset 0 -3px 0 var(--primary);
+        }
+
+        .time-cell {
+            background-color: #fcfafb;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+            padding: 0 4px;
+            height: var(--cell-h);
+        }
+
+        .slot-cell {
+            padding: 0;
+            height: var(--cell-h);
+        }
+
+        .slot-btn {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.12s ease;
+        }
+
+        .slot-btn.status-ok {
+            color: var(--primary);
+            font-size: var(--slot-font);
+            font-weight: 900;
+            background-color: #ffffff;
+        }
+
+        .slot-btn.status-ok:hover {
+            background-color: var(--primary-light);
+        }
+
+        .slot-btn.status-ng {
+            color: #c7c2c9;
+            font-size: 15px;
+            font-weight: 700;
+            background-color: #f9f8f9;
+            cursor: default;
+        }
+
+        .admin-mode .slot-btn.status-ng {
+            cursor: pointer;
+        }
+
+        .admin-mode .slot-btn.status-ng:hover {
+            background-color: #f1edf0;
+            color: var(--text-sub);
+        }
+
+        .slot-btn.status-booked {
+            background-color: #ecfdf5;
+            color: var(--success);
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .slot-btn.status-booked:hover {
+            background-color: #d1fae5;
+        }
+
+        .slot-booked-name {
+            font-size: 10px;
+            color: #065f46;
+            max-width: 92%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* =========================================================
+           予約一覧ビュー
+           ========================================================= */
+        #listView {
+            overflow-y: auto;
+        }
+
+        .list-inner {
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .list-title {
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .booking-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 10px;
+        }
+
+        .booking-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .booking-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .booking-datetime {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .booking-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid var(--primary-border);
+            font-size: 11px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .booking-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 14px;
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .booking-meta span strong {
+            color: var(--text-main);
+        }
+
+        .booking-memo {
+            background-color: #faf8f9;
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            font-size: 12px;
+            color: var(--text-sub);
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .booking-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            padding-top: 8px;
+            margin-top: auto;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .btn-line-share {
+            height: 32px;
+            padding: 0 12px;
+            border-radius: var(--radius-sm);
+            background-color: var(--line-green);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background-clip: padding-box;
+        }
+
+        .btn-line-share:hover {
+            opacity: 0.9;
+        }
+
+        .btn-cancel {
+            height: 32px;
+            padding: 0 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #fecdd3;
+            background-color: #fff1f2;
+            color: #e11d48;
+            font-size: 12px;
+            font-weight: 700;
+            background-clip: padding-box;
+        }
+
+        .btn-cancel:hover {
+            background-color: #ffe4e6;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 44px 20px;
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: #fcfafb;
+        }
+
+        .empty-state-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state h3 {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 14px;
+        }
+
+        .btn-primary-inline {
+            height: 36px;
+            padding: 0 18px;
+            border-radius: 999px;
+            background-color: var(--primary);
+            border: 1.5px solid var(--primary);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background-clip: padding-box;
+        }
+
+        .btn-primary-inline:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        /* =========================================================
+           モーダル（予約入力 & 管理パスワード認証）
+           ========================================================= */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(45, 42, 46, 0.55);
+            backdrop-filter: blur(2px);
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 460px;
+            background-color: #ffffff;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            animation: modalUp 0.18s ease-out;
+        }
+
+        .modal-card.compact {
+            max-width: 360px;
+        }
+
+        @keyframes modalUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 13px 16px;
+            background-color: var(--primary-light);
+            border-bottom: 1px solid var(--primary-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            color: var(--text-sub);
+            font-size: 18px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 75dvh;
+            overflow-y: auto;
+        }
+
+        .selected-slot-box {
+            background-color: #fcfafb;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+        }
+
+        .selected-slot-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-sub);
+        }
+
+        .selected-slot-value {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 2px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .req-tag {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background-color: var(--primary);
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .opt-tag {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background-color: #ebe6e8;
+            color: var(--text-sub);
+            font-weight: 700;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 9px 11px;
+            background-color: #ffffff;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 68px;
+        }
+
+        .form-error {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--sun-color);
+        }
+
+        .modal-footer {
+            padding: 12px 16px 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-secondary-full {
+            flex: 1;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border-color);
+            background-color: #fafafa;
+            color: var(--text-sub);
+            font-weight: 700;
+            background-clip: padding-box;
+        }
+
+        .btn-primary-full {
+            flex: 2;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background-color: var(--primary);
+            border: 1.5px solid var(--primary);
+            color: #ffffff;
+            font-weight: 800;
+            background-clip: padding-box;
+        }
+
+        .btn-primary-full:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-primary-full:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .app-footer {
+            text-align: center;
+            padding: 8px var(--section-pad-x);
+            font-size: 11px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background-color: #fcfafb;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 600px) {
+            .header-top {
+                padding: 8px 12px;
+            }
+            .brand-icon {
+                width: 32px;
+                height: 32px;
+            }
+            .sync-pill .sync-text {
+                display: none;
+            }
+            .salon-info-card {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- トースト通知 -->
+    <div id="topToast" class="top-toast" role="status" aria-live="polite">
+        <div class="toast-icon">✓</div>
+        <div class="toast-body">
+            <div id="toastTitle" class="toast-title"></div>
+            <div id="toastMsg" class="toast-msg"></div>
+        </div>
+    </div>
+
+    <div class="app-shell">
+        <!-- ヘッダー -->
+        <header id="appHeader" class="app-header">
+            <div class="header-top">
+                <div class="brand-area">
+                    <div class="brand-icon" aria-hidden="true">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </div>
+                    <div class="brand-title-wrap">
+                        <span class="brand-sub" data-i18n="brandSub">PRIVATE BEDROOM SALON</span>
+                        <h1 class="brand-title" data-i18n="brandTitle">寝室入室 予約フォーム</h1>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="syncBtn" class="sync-pill" type="button" title="Googleスプレッドシートと同期">
+                        <span class="sync-dot"></span>
+                        <span id="syncText" class="sync-text"></span>
+                    </button>
+                    <select id="langSelect" class="lang-select" aria-label="Language">
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="en">🇺🇸 English</option>
+                        <option value="ko">🇰🇷 한국어</option>
+                        <option value="zh">🇨🇳 中文</option>
+                        <option value="vi">🇻🇳 Tiếng Việt</option>
+                    </select>
+                    <button id="adminToggleBtn" class="icon-btn" type="button">
+                        <span data-i18n="adminBtn">管理</span>
+                    </button>
+                    <button id="notifBtn" class="icon-btn square" type="button" aria-label="Notifications">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span id="notifBadge" class="badge-dot hidden">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <nav class="main-tabs" aria-label="Main Tabs">
+                <button id="tabCalendar" class="tab-btn active" type="button">
+                    <span data-i18n="tabCalendar">空き状況・Web予約</span>
+                </button>
+                <button id="tabList" class="tab-btn" type="button">
+                    <span data-i18n="tabList">予約一覧</span>
+                    <span id="tabBookingCount" class="tab-count">0</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- カレンダービュー -->
+        <main id="calendarView" class="view-section">
+            <div id="calendarTopStack" class="calendar-top-stack">
+                <section class="salon-info-card">
+                    <div class="salon-info-text">
+                        <h2 data-i18n="bannerTitle">ご希望の日時をタップしてご予約ください</h2>
+                        <p data-i18n="bannerSub">受付時間：20:00〜25:00（30分刻み・当日予約OK）</p>
+                    </div>
+                    <div class="legend-pills">
+                        <span class="legend-item"><span class="mark-ok-sample">◎</span> <span data-i18n="legendOk">空きあり</span></span>
+                        <span class="legend-item"><span class="mark-booked-sample" data-i18n="markBookedShort">予</span> <span data-i18n="legendBooked">予約済</span></span>
+                        <span class="legend-item"><span class="mark-ng-sample">×</span> <span data-i18n="legendNg">満席</span></span>
+                    </div>
+                </section>
+
+                <!-- 管理モードバー -->
+                <div id="adminBanner" class="admin-banner hidden">
+                    <div class="admin-banner-row">
+                        <div><strong data-i18n="adminOnTitle">管理モードON：</strong><span data-i18n="adminOnDesc">枠をタップすると「◎ 空き」と「× 受付停止」を切り替えられます。</span></div>
+                        <button id="resetDataBtn" class="admin-btn" type="button" data-i18n="resetBtn">全データ初期化</button>
+                    </div>
+                    <div class="admin-gas-row">
+                        <input id="gasUrlInput" class="admin-gas-input" type="url" placeholder="デプロイしたGASウェブアプリURLを入力">
+                        <button id="saveGasUrlBtn" class="admin-btn primary" type="button" data-i18n="saveGasBtn">GAS URLを保存して同期</button>
+                    </div>
+                </div>
+
+                <!-- コース選択 -->
+                <div id="courseStrip" class="course-strip" role="radiogroup"></div>
+
+                <!-- 週送りナビ -->
+                <div class="week-nav">
+                    <button id="prevWeekBtn" class="week-nav-btn" type="button" data-i18n="prevWeek">‹ 前の週</button>
+                    <div class="week-range-label">
+                        <span id="weekRangeMain" class="week-range-main"></span>
+                        <button id="todayWeekBtn" class="week-today-link" type="button" data-i18n="backToday">今週へ戻る</button>
+                    </div>
+                    <button id="nextWeekBtn" class="week-nav-btn" type="button" data-i18n="nextWeek">次の週 ›</button>
+                </div>
+            </div>
+
+            <!-- 予約マトリクス -->
+            <div class="matrix-card">
+                <div class="matrix-scroll">
+                    <table class="schedule-table">
+                        <thead id="matrixHead"></thead>
+                        <tbody id="matrixBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- 予約一覧ビュー -->
+        <section id="listView" class="view-section hidden">
+            <div class="list-inner">
+                <div class="list-header-bar">
+                    <h2 class="list-title" data-i18n="listTitle">確定済みの入室予約</h2>
+                    <button id="goCalendarFromListBtn" class="icon-btn" type="button" data-i18n="newBookingBtn">＋ 新規予約</button>
+                </div>
+                <div id="bookingListContainer" class="booking-list"></div>
+            </div>
+        </section>
+
+        <footer id="appFooter" class="app-footer" data-i18n="footerText">
+            寝室入室 予約フォーム（Googleスプレッドシート連携対応）
+        </footer>
+    </div>
+
+    <!-- 予約入力モーダル -->
+    <div id="bookingModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="modalTitle">入室予約の確認・入力</h3>
+                <button id="closeModalBtn" class="modal-close" type="button" aria-label="Close">×</button>
+            </div>
+            <form id="bookingForm">
+                <div class="modal-body">
+                    <div class="selected-slot-box">
+                        <div class="selected-slot-label" data-i18n="selectedSlotLabel">選択中の日時</div>
+                        <div id="modalSlotText" class="selected-slot-value"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="guestName">
+                            <span data-i18n="nameLabel">お名前（ニックネーム可）</span>
+                            <span class="req-tag" data-i18n="reqTag">必須</span>
+                        </label>
+                        <input id="guestName" class="form-input" type="text" required maxlength="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="courseSelect">
+                            <span data-i18n="courseLabel">入室コース・目的</span>
+                            <span class="req-tag" data-i18n="reqTag">必須</span>
+                        </label>
+                        <select id="courseSelect" class="form-select"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="lightingPref">
+                            <span data-i18n="lightingLabel">照明・環境のご希望</span>
+                            <span class="opt-tag" data-i18n="optTag">任意</span>
+                        </label>
+                        <select id="lightingPref" class="form-select"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="guestMemo">
+                            <span data-i18n="memoLabel">メッセージ・ご要望</span>
+                            <span class="opt-tag" data-i18n="optTag">任意</span>
+                        </label>
+                        <textarea id="guestMemo" class="form-textarea" maxlength="200"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancelModalBtn" class="btn-secondary-full" type="button" data-i18n="cancelBtn">キャンセル</button>
+                    <button id="submitBookingBtn" class="btn-primary-full" type="submit" data-i18n="submitBtn">この内容で予約する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 管理モード パスワード認証モーダル -->
+    <div id="adminAuthModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="modal-card compact">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="authTitle">管理モード認証</h3>
+                <button id="closeAuthBtn" class="modal-close" type="button" aria-label="Close">×</button>
+            </div>
+            <form id="adminAuthForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="adminPassInput" data-i18n="authLabel">管理者パスワードを入力してください</label>
+                        <input id="adminPassInput" class="form-input" type="password" inputmode="numeric" autocomplete="off" maxlength="16" required>
+                        <div id="adminPassError" class="form-error hidden" data-i18n="authError">パスワードが違います</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancelAuthBtn" class="btn-secondary-full" type="button" data-i18n="cancelBtn">キャンセル</button>
+                    <button class="btn-primary-full" type="submit" data-i18n="authSubmit">ログイン</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               GitHub Pages 公開設定
+               Google Apps Script (gas/Code.gs) のウェブアプリURLを
+               DEFAULT_GAS_WEB_APP_URL に貼り付けて公開してください。
+               ========================================================= */
+            const DEFAULT_GAS_WEB_APP_URL = '';
+            const ADMIN_PASSCODE = '1107';
+
+            const STORAGE_DATA_KEY = 'bedroom_salon_cache_v2';
+            const STORAGE_LANG_KEY = 'bedroom_salon_lang_v2';
+            const STORAGE_GAS_KEY = 'bedroom_salon_gas_url_v2';
+
+            const TIME_SLOTS = [
+                '20:00', '20:30', '21:00', '21:30',
+                '22:00', '22:30', '23:00', '23:30',
+                '24:00', '24:30', '25:00'
+            ];
+
+            const COURSE_KEYS = ['normal', 'chat', 'relax', 'quiet'];
+            const LIGHTING_KEYS = ['auto', 'dim', 'dark', 'bright'];
+
+            const I18N = {
+                ja: {
+                    pageTitle: '寝室入室 予約フォーム | サロン風空き状況＆Web予約',
+                    brandSub: 'PRIVATE BEDROOM SALON',
+                    brandTitle: '寝室入室 予約フォーム',
+                    adminBtn: '管理',
+                    tabCalendar: '空き状況・Web予約',
+                    tabList: '予約一覧',
+                    bannerTitle: 'ご希望の日時をタップしてご予約ください',
+                    bannerSub: '受付時間：20:00〜25:00（30分刻み・当日予約OK）',
+                    legendOk: '空きあり',
+                    legendBooked: '予約済',
+                    legendNg: '満席',
+                    markBookedShort: '予',
+                    adminOnTitle: '管理モードON：',
+                    adminOnDesc: '枠をタップすると「◎ 空き」と「× 受付停止」を切り替えられます。',
+                    resetBtn: '全データ初期化',
+                    saveGasBtn: 'GAS URLを保存して同期',
+                    prevWeek: '‹ 前の週',
+                    nextWeek: '次の週 ›',
+                    backToday: '今週へ戻る',
+                    timeCol: '時間',
+                    listTitle: '確定済みの入室予約',
+                    newBookingBtn: '＋ 新規予約',
+                    footerText: '寝室入室 予約フォーム（Googleスプレッドシート連携対応）',
+                    modalTitle: '入室予約の確認・入力',
+                    selectedSlotLabel: '選択中の日時',
+                    nameLabel: 'お名前（ニックネーム可）',
+                    namePlaceholder: '例：かずや',
+                    courseLabel: '入室コース・目的',
+                    lightingLabel: '照明・環境のご希望',
+                    memoLabel: 'メッセージ・ご要望',
+                    memoPlaceholder: '例：お風呂上がりに入ります / 静かに入室します',
+                    reqTag: '必須',
+                    optTag: '任意',
+                    cancelBtn: 'キャンセル',
+                    submitBtn: 'この内容で予約する',
+                    submittingBtn: '送信中...',
+                    authTitle: '管理モード認証',
+                    authLabel: '管理者パスワードを入力してください',
+                    authPlaceholder: 'パスワード',
+                    authError: 'パスワードが違います',
+                    authSubmit: 'ログイン',
+                    emptyTitle: 'まだ入室予約がありません',
+                    emptyDesc: 'カレンダーの「◎」マークをタップすると、かんたんにWeb予約できます。',
+                    emptyBtn: '空き状況を見る',
+                    cardName: 'お名前',
+                    cardLighting: '環境',
+                    shareBtn: 'LINE用テキストをコピー',
+                    cancelBookingBtn: '予約をキャンセル',
+                    syncLocal: 'ローカル保存',
+                    syncSynced: 'Sheets同期済',
+                    syncSyncing: '同期中...',
+                    syncError: '同期エラー',
+                    dow: ['日', '月', '火', '水', '木', '金', '土'],
+                    courses: {
+                        normal: { label: '通常入室（おやすみ）', min: '30分〜' },
+                        chat: { label: 'ちょっとお話し', min: '15分' },
+                        relax: { label: 'ゆったりリラックス', min: '60分' },
+                        quiet: { label: '静かに就寝のみ', min: '無言OK' }
+                    },
+                    lighting: {
+                        auto: 'おまかせ',
+                        dim: '間接照明のみ（暗め）',
+                        dark: '完全消灯で静かに',
+                        bright: '明るめ（少し会話したい）'
+                    },
+                    toastBookedTitle: '予約を受け付けました',
+                    toastCanceledTitle: '予約をキャンセルしました',
+                    toastCopiedTitle: 'コピーしました',
+                    toastCopiedMsg: 'LINE等にそのまま貼り付けて共有できます',
+                    toastAdminOn: '管理モードON',
+                    toastAdminOnMsg: '枠をタップして空き状況を編集できます',
+                    toastAdminOff: '管理モードOFF',
+                    toastAdminOffMsg: '通常の予約モードに戻りました',
+                    toastReset: '初期化完了',
+                    toastResetMsg: 'すべての予約と満席枠をリセットしました',
+                    toastSyncOk: '同期完了',
+                    toastSyncOkMsg: 'Googleスプレッドシートから最新データを取得しました',
+                    toastSyncErr: '同期に失敗しました',
+                    toastSyncErrMsg: 'GAS URLと公開権限（全員）を確認してください',
+                    toastSlotTaken: '予約できませんでした',
+                    toastSlotTakenMsg: 'この枠はすでに予約済みまたは受付停止です',
+                    toastListInfo: '予約一覧を表示しました',
+                    countMsg: (n) => `現在 ${n} 件の予約があります`,
+                    confirmReset: 'スプレッドシート内の予約と受付停止枠をすべて初期化しますか？',
+                    formatDate: (y, m, d, dow) => `${y}年${m}月${d}日（${dow}）`,
+                    formatRange: (f, l) => `${f.getFullYear()}年${f.getMonth() + 1}月${f.getDate()}日 〜 ${l.getMonth() + 1}月${l.getDate()}日`,
+                    shareHeader: '【寝室入室 予約のお知らせ】'
+                },
+                en: {
+                    pageTitle: 'Bedroom Entry Booking | Salon-Style Availability',
+                    brandSub: 'PRIVATE BEDROOM SALON',
+                    brandTitle: 'Bedroom Entry Booking',
+                    adminBtn: 'Admin',
+                    tabCalendar: 'Availability',
+                    tabList: 'Bookings',
+                    bannerTitle: 'Tap an available time slot to book',
+                    bannerSub: 'Hours: 20:00–25:00 (30-min intervals · Same-day OK)',
+                    legendOk: 'Open',
+                    legendBooked: 'Booked',
+                    legendNg: 'Closed',
+                    markBookedShort: 'B',
+                    adminOnTitle: 'Admin Mode ON: ',
+                    adminOnDesc: 'Tap any slot to toggle between Open (◎) and Closed (×).',
+                    resetBtn: 'Reset All',
+                    saveGasBtn: 'Save GAS URL & Sync',
+                    prevWeek: '‹ Prev',
+                    nextWeek: 'Next ›',
+                    backToday: 'This Week',
+                    timeCol: 'Time',
+                    listTitle: 'Confirmed Bookings',
+                    newBookingBtn: '+ New Booking',
+                    footerText: 'Bedroom Entry Booking (Google Sheets Sync Ready)',
+                    modalTitle: 'New Bedroom Booking',
+                    selectedSlotLabel: 'Selected Date & Time',
+                    nameLabel: 'Your Name (Nickname OK)',
+                    namePlaceholder: 'e.g. Kazuya',
+                    courseLabel: 'Course / Purpose',
+                    lightingLabel: 'Lighting Preference',
+                    memoLabel: 'Notes / Requests',
+                    memoPlaceholder: 'e.g. Coming in after a shower / entering quietly',
+                    reqTag: 'Required',
+                    optTag: 'Optional',
+                    cancelBtn: 'Cancel',
+                    submitBtn: 'Confirm Booking',
+                    submittingBtn: 'Saving...',
+                    authTitle: 'Admin Verification',
+                    authLabel: 'Enter admin passcode',
+                    authPlaceholder: 'Passcode',
+                    authError: 'Incorrect passcode',
+                    authSubmit: 'Unlock',
+                    emptyTitle: 'No bookings yet',
+                    emptyDesc: 'Tap any ◎ slot on the calendar to make a reservation.',
+                    emptyBtn: 'View Calendar',
+                    cardName: 'Name',
+                    cardLighting: 'Lighting',
+                    shareBtn: 'Copy Share Text',
+                    cancelBookingBtn: 'Cancel',
+                    syncLocal: 'Local Mode',
+                    syncSynced: 'Sheets Synced',
+                    syncSyncing: 'Syncing...',
+                    syncError: 'Sync Error',
+                    dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                    courses: {
+                        normal: { label: 'Standard Sleep', min: '30m+' },
+                        chat: { label: 'Quick Chat', min: '15m' },
+                        relax: { label: 'Relax Together', min: '60m' },
+                        quiet: { label: 'Quiet Sleep Only', min: 'Silent' }
+                    },
+                    lighting: {
+                        auto: 'Any / Default',
+                        dim: 'Warm Dim Lamp',
+                        dark: 'Lights Off & Quiet',
+                        bright: 'Bright (For Chatting)'
+                    },
+                    toastBookedTitle: 'Booking Confirmed',
+                    toastCanceledTitle: 'Booking Canceled',
+                    toastCopiedTitle: 'Copied',
+                    toastCopiedMsg: 'Ready to paste into LINE or chat',
+                    toastAdminOn: 'Admin Mode ON',
+                    toastAdminOnMsg: 'Tap slots to toggle availability',
+                    toastAdminOff: 'Admin Mode OFF',
+                    toastAdminOffMsg: 'Returned to normal booking mode',
+                    toastReset: 'Reset Complete',
+                    toastResetMsg: 'Cleared all bookings and closed slots',
+                    toastSyncOk: 'Synced',
+                    toastSyncOkMsg: 'Loaded latest data from Google Sheets',
+                    toastSyncErr: 'Sync Failed',
+                    toastSyncErrMsg: 'Check GAS URL and deployment access',
+                    toastSlotTaken: 'Slot Unavailable',
+                    toastSlotTakenMsg: 'This slot is already booked or closed',
+                    toastListInfo: 'Bookings List',
+                    countMsg: (n) => `${n} active booking(s)`,
+                    confirmReset: 'Clear all bookings and closed slots in Google Sheets?',
+                    formatDate: (y, m, d, dow) => `${y}/${m}/${d} (${dow})`,
+                    formatRange: (f, l) => `${f.getFullYear()}/${f.getMonth() + 1}/${f.getDate()} – ${l.getMonth() + 1}/${l.getDate()}`,
+                    shareHeader: '[Bedroom Entry Booking]'
+                },
+                ko: {
+                    pageTitle: '침실 입장 예약 폼 | 살롱 스타일 예약',
+                    brandSub: 'PRIVATE BEDROOM SALON',
+                    brandTitle: '침실 입장 예약 폼',
+                    adminBtn: '관리',
+                    tabCalendar: '예약 현황',
+                    tabList: '예약 목록',
+                    bannerTitle: '원하는 날짜와 시간을 탭해 예약하세요',
+                    bannerSub: '접수 시간: 20:00~25:00 (30분 단위 · 당일 예약 가능)',
+                    legendOk: '예약 가능',
+                    legendBooked: '예약 완료',
+                    legendNg: '마감',
+                    markBookedShort: '예',
+                    adminOnTitle: '관리 모드 ON: ',
+                    adminOnDesc: '시간 칸을 탭하면 가능(◎) / 마감(×)을 전환할 수 있습니다.',
+                    resetBtn: '전체 초기화',
+                    saveGasBtn: 'GAS URL 저장 및 동기화',
+                    prevWeek: '‹ 이전 주',
+                    nextWeek: '다음 주 ›',
+                    backToday: '이번 주로',
+                    timeCol: '시간',
+                    listTitle: '확정된 입장 예약',
+                    newBookingBtn: '+ 새 예약',
+                    footerText: '침실 입장 예약 폼 (Google 스프레드시트 연동 지원)',
+                    modalTitle: '입장 예약 입력',
+                    selectedSlotLabel: '선택한 일시',
+                    nameLabel: '이름 (닉네임 가능)',
+                    namePlaceholder: '예: 카즈야',
+                    courseLabel: '입장 코스 / 목적',
+                    lightingLabel: '조명 및 환경 요청',
+                    memoLabel: '메모 / 요청 사항',
+                    memoPlaceholder: '예: 샤워 후 조용히 들어갈게요',
+                    reqTag: '필수',
+                    optTag: '선택',
+                    cancelBtn: '취소',
+                    submitBtn: '예약 확정하기',
+                    submittingBtn: '전송 중...',
+                    authTitle: '관리 모드 인증',
+                    authLabel: '관리자 비밀번호를 입력하세요',
+                    authPlaceholder: '비밀번호',
+                    authError: '비밀번호가 올바르지 않습니다',
+                    authSubmit: '로그인',
+                    emptyTitle: '아직 예약이 없습니다',
+                    emptyDesc: '달력의 ◎ 표시를 탭하면 간편하게 예약할 수 있습니다.',
+                    emptyBtn: '예약 현황 보기',
+                    cardName: '이름',
+                    cardLighting: '환경',
+                    shareBtn: '공유 텍스트 복사',
+                    cancelBookingBtn: '예약 취소',
+                    syncLocal: '로컬 저장',
+                    syncSynced: '시트 동기화됨',
+                    syncSyncing: '동기화 중...',
+                    syncError: '동기화 오류',
+                    dow: ['일', '월', '화', '수', '목', '금', '토'],
+                    courses: {
+                        normal: { label: '일반 입장 (취침)', min: '30분~' },
+                        chat: { label: '잠깐 수다 코스', min: '15분' },
+                        relax: { label: '여유로운 휴식', min: '60분' },
+                        quiet: { label: '조용히 취침만', min: '무언OK' }
+                    },
+                    lighting: {
+                        auto: '상관없음',
+                        dim: '무드등만 (은은하게)',
+                        dark: '완전 소등 & 조용히',
+                        bright: '밝게 (대화 원함)'
+                    },
+                    toastBookedTitle: '예약이 완료되었습니다',
+                    toastCanceledTitle: '예약이 취소되었습니다',
+                    toastCopiedTitle: '복사 완료',
+                    toastCopiedMsg: 'LINE이나 메신저에 바로 붙여넣을 수 있습니다',
+                    toastAdminOn: '관리 모드 ON',
+                    toastAdminOnMsg: '칸을 탭하여 예약 가능 여부를 변경하세요',
+                    toastAdminOff: '관리 모드 OFF',
+                    toastAdminOffMsg: '일반 예약 모드로 돌아왔습니다',
+                    toastReset: '초기화 완료',
+                    toastResetMsg: '모든 예약 및 마감 설정을 초기화했습니다',
+                    toastSyncOk: '동기화 완료',
+                    toastSyncOkMsg: 'Google 스프레드시트에서 최신 데이터를 불러왔습니다',
+                    toastSyncErr: '동기화 실패',
+                    toastSyncErrMsg: 'GAS URL과 접근 권한을 확인해 주세요',
+                    toastSlotTaken: '예약 불가',
+                    toastSlotTakenMsg: '이미 예약되었거나 마감된 시간입니다',
+                    toastListInfo: '예약 목록',
+                    countMsg: (n) => `현재 ${n}건의 예약이 있습니다`,
+                    confirmReset: '모든 예약과 마감 데이터를 초기화할까요?',
+                    formatDate: (y, m, d, dow) => `${y}년 ${m}월 ${d}일 (${dow})`,
+                    formatRange: (f, l) => `${f.getFullYear()}.${f.getMonth() + 1}.${f.getDate()} ~ ${l.getMonth() + 1}.${l.getDate()}`,
+                    shareHeader: '[침실 입장 예약 안내]'
+                },
+                zh: {
+                    pageTitle: '卧室进入预约表单 | 沙龙风格在线预约',
+                    brandSub: 'PRIVATE BEDROOM SALON',
+                    brandTitle: '卧室进入预约表单',
+                    adminBtn: '管理',
+                    tabCalendar: '空位预约',
+                    tabList: '预约列表',
+                    bannerTitle: '点击空闲时段即可预约',
+                    bannerSub: '接待时间：20:00〜25:00（每30分钟 · 可当天预约）',
+                    legendOk: '可预约',
+                    legendBooked: '已预约',
+                    legendNg: '已满',
+                    markBookedShort: '约',
+                    adminOnTitle: '管理模式已开启：',
+                    adminOnDesc: '点击时段可切换“◎ 可预约”与“× 暂停接待”。',
+                    resetBtn: '清空全部数据',
+                    saveGasBtn: '保存 GAS URL 并同步',
+                    prevWeek: '‹ 上周',
+                    nextWeek: '下周 ›',
+                    backToday: '回到本周',
+                    timeCol: '时间',
+                    listTitle: '已确认的进入预约',
+                    newBookingBtn: '+ 新增预约',
+                    footerText: '卧室进入预约表单（支持 Google 表格云端同步）',
+                    modalTitle: '填写进入预约',
+                    selectedSlotLabel: '已选日期时间',
+                    nameLabel: '姓名（可使用昵称）',
+                    namePlaceholder: '例：Kazuya',
+                    courseLabel: '预约项目 / 目的',
+                    lightingLabel: '灯光与环境偏好',
+                    memoLabel: '备注 / 要求',
+                    memoPlaceholder: '例：洗完澡后轻轻进来',
+                    reqTag: '必填',
+                    optTag: '选填',
+                    cancelBtn: '取消',
+                    submitBtn: '确认预约',
+                    submittingBtn: '提交中...',
+                    authTitle: '管理模式验证',
+                    authLabel: '请输入管理员密码',
+                    authPlaceholder: '密码',
+                    authError: '密码错误',
+                    authSubmit: '解锁',
+                    emptyTitle: '暂无预约记录',
+                    emptyDesc: '点击日历上的“◎”即可快速完成在线预约。',
+                    emptyBtn: '查看空位',
+                    cardName: '姓名',
+                    cardLighting: '环境',
+                    shareBtn: '复制分享文本',
+                    cancelBookingBtn: '取消预约',
+                    syncLocal: '本地模式',
+                    syncSynced: '已同步表格',
+                    syncSyncing: '同步中...',
+                    syncError: '同步失败',
+                    dow: ['日', '一', '二', '三', '四', '五', '六'],
+                    courses: {
+                        normal: { label: '常规入睡', min: '30分起' },
+                        chat: { label: '小聊一会儿', min: '15分' },
+                        relax: { label: '轻松休息', min: '60分' },
+                        quiet: { label: '安静就寝', min: '静音OK' }
+                    },
+                    lighting: {
+                        auto: '随意 / 默认',
+                        dim: '仅氛围灯（偏暗）',
+                        dark: '全关灯保持安静',
+                        bright: '明亮（想聊会儿天）'
+                    },
+                    toastBookedTitle: '预约成功',
+                    toastCanceledTitle: '已取消预约',
+                    toastCopiedTitle: '已复制',
+                    toastCopiedMsg: '可直接粘贴发送至 LINE 或微信',
+                    toastAdminOn: '管理模式已开启',
+                    toastAdminOnMsg: '点击时段即可修改可预约状态',
+                    toastAdminOff: '管理模式已关闭',
+                    toastAdminOffMsg: '已恢复普通预约模式',
+                    toastReset: '已重置',
+                    toastResetMsg: '已清空所有预约与屏蔽时段',
+                    toastSyncOk: '同步成功',
+                    toastSyncOkMsg: '已从 Google 表格加载最新数据',
+                    toastSyncErr: '同步失败',
+                    toastSyncErrMsg: '请检查 GAS URL 与部署权限',
+                    toastSlotTaken: '无法预约',
+                    toastSlotTakenMsg: '该时段已被预约或暂停接待',
+                    toastListInfo: '预约列表',
+                    countMsg: (n) => `当前共有 ${n} 条预约`,
+                    confirmReset: '确定要清空表格中的所有预约和屏蔽时段吗？',
+                    formatDate: (y, m, d, dow) => `${y}年${m}月${d}日（周${dow}）`,
+                    formatRange: (f, l) => `${f.getFullYear()}年${f.getMonth() + 1}月${f.getDate()}日 ～ ${l.getMonth() + 1}月${l.getDate()}日`,
+                    shareHeader: '【卧室进入预约通知】'
+                },
+                vi: {
+                    pageTitle: 'Đặt Lịch Vào Phòng Ngủ | Lịch Trống Trực Tuyến',
+                    brandSub: 'PRIVATE BEDROOM SALON',
+                    brandTitle: 'Đặt Lịch Vào Phòng Ngủ',
+                    adminBtn: 'Quản trị',
+                    tabCalendar: 'Lịch trống',
+                    tabList: 'Đã đặt',
+                    bannerTitle: 'Chạm vào khung giờ trống để đặt lịch',
+                    bannerSub: 'Giờ nhận: 20:00–25:00 (mỗi 30 phút · Đặt trong ngày OK)',
+                    legendOk: 'Còn trống',
+                    legendBooked: 'Đã đặt',
+                    legendNg: 'Kín lịch',
+                    markBookedShort: 'Đ',
+                    adminOnTitle: 'Chế độ quản trị BẬT: ',
+                    adminOnDesc: 'Chạm vào ô giờ để đổi giữa Trống (◎) và Khóa (×).',
+                    resetBtn: 'Đặt lại tất cả',
+                    saveGasBtn: 'Lưu GAS URL & Đồng bộ',
+                    prevWeek: '‹ Tuần trước',
+                    nextWeek: 'Tuần sau ›',
+                    backToday: 'Tuần này',
+                    timeCol: 'Giờ',
+                    listTitle: 'Danh sách lịch đã đặt',
+                    newBookingBtn: '+ Đặt mới',
+                    footerText: 'Đặt Lịch Vào Phòng Ngủ (Hỗ trợ đồng bộ Google Sheets)',
+                    modalTitle: 'Xác nhận đặt lịch',
+                    selectedSlotLabel: 'Ngày giờ đã chọn',
+                    nameLabel: 'Tên của bạn (biệt danh OK)',
+                    namePlaceholder: 'VD: Kazuya',
+                    courseLabel: 'Gói / Mục đích vào phòng',
+                    lightingLabel: 'Yêu cầu ánh sáng',
+                    memoLabel: 'Ghi chú / Yêu cầu thêm',
+                    memoPlaceholder: 'VD: Tắm xong sẽ vào nhẹ nhàng',
+                    reqTag: 'Bắt buộc',
+                    optTag: 'Tùy chọn',
+                    cancelBtn: 'Hủy',
+                    submitBtn: 'Xác nhận đặt lịch',
+                    submittingBtn: 'Đang lưu...',
+                    authTitle: 'Xác thực quản trị',
+                    authLabel: 'Nhập mật khẩu quản trị viên',
+                    authPlaceholder: 'Mật khẩu',
+                    authError: 'Mật khẩu không đúng',
+                    authSubmit: 'Mở khóa',
+                    emptyTitle: 'Chưa có lịch đặt nào',
+                    emptyDesc: 'Chạm vào dấu ◎ trên lịch để đặt chỗ nhanh chóng.',
+                    emptyBtn: 'Xem lịch trống',
+                    cardName: 'Tên',
+                    cardLighting: 'Ánh sáng',
+                    shareBtn: 'Sao chép tin nhắn',
+                    cancelBookingBtn: 'Hủy lịch',
+                    syncLocal: 'Lưu cục bộ',
+                    syncSynced: 'Đã đồng bộ',
+                    syncSyncing: 'Đang đồng bộ...',
+                    syncError: 'Lỗi đồng bộ',
+                    dow: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+                    courses: {
+                        normal: { label: 'Vào ngủ bình thường', min: '30p+' },
+                        chat: { label: 'Trò chuyện ngắn', min: '15p' },
+                        relax: { label: 'Thư giãn thoải mái', min: '60p' },
+                        quiet: { label: 'Chỉ ngủ yên tĩnh', min: 'Im lặng' }
+                    },
+                    lighting: {
+                        auto: 'Tùy chọn / Mặc định',
+                        dim: 'Đèn ngủ dịu nhẹ',
+                        dark: 'Tắt hết đèn & yên tĩnh',
+                        bright: 'Sáng (muốn trò chuyện)'
+                    },
+                    toastBookedTitle: 'Đặt lịch thành công',
+                    toastCanceledTitle: 'Đã hủy lịch đặt',
+                    toastCopiedTitle: 'Đã sao chép',
+                    toastCopiedMsg: 'Có thể dán trực tiếp vào LINE hoặc tin nhắn',
+                    toastAdminOn: 'Chế độ quản trị BẬT',
+                    toastAdminOnMsg: 'Chạm vào các khung giờ để chỉnh sửa trạng thái',
+                    toastAdminOff: 'Chế độ quản trị TẮT',
+                    toastAdminOffMsg: 'Đã quay lại chế độ đặt lịch thường',
+                    toastReset: 'Đã đặt lại',
+                    toastResetMsg: 'Đã xóa toàn bộ lịch đặt và khung giờ khóa',
+                    toastSyncOk: 'Đồng bộ thành công',
+                    toastSyncOkMsg: 'Đã tải dữ liệu mới nhất từ Google Sheets',
+                    toastSyncErr: 'Đồng bộ thất bại',
+                    toastSyncErrMsg: 'Kiểm tra lại GAS URL và quyền truy cập',
+                    toastSlotTaken: 'Không thể đặt',
+                    toastSlotTakenMsg: 'Khung giờ này đã có người đặt hoặc đã khóa',
+                    toastListInfo: 'Danh sách đã đặt',
+                    countMsg: (n) => `Hiện có ${n} lịch đặt`,
+                    confirmReset: 'Xóa toàn bộ lịch đặt và khung giờ khóa trên Google Sheets?',
+                    formatDate: (y, m, d, dow) => `${d}/${m}/${y} (${dow})`,
+                    formatRange: (f, l) => `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()} – ${l.getDate()}/${l.getMonth() + 1}`,
+                    shareHeader: '[Thông báo đặt lịch vào phòng ngủ]'
+                }
+            };
+
+            const state = {
+                lang: 'ja',
+                weekOffset: 0,
+                adminMode: false,
+                selectedCourse: 'normal',
+                activeTab: 'calendar',
+                pendingSlot: null,
+                gasUrl: '',
+                syncStatus: 'local',
+                bookings: [],
+                blockedSlots: {}
+            };
+
+            const els = {
+                appShell: document.querySelector('.app-shell'),
+                appHeader: document.getElementById('appHeader'),
+                appFooter: document.getElementById('appFooter'),
+                calendarTopStack: document.getElementById('calendarTopStack'),
+                syncBtn: document.getElementById('syncBtn'),
+                syncText: document.getElementById('syncText'),
+                langSelect: document.getElementById('langSelect'),
+                adminToggleBtn: document.getElementById('adminToggleBtn'),
+                adminBanner: document.getElementById('adminBanner'),
+                gasUrlInput: document.getElementById('gasUrlInput'),
+                saveGasUrlBtn: document.getElementById('saveGasUrlBtn'),
+                resetDataBtn: document.getElementById('resetDataBtn'),
+                notifBtn: document.getElementById('notifBtn'),
+                notifBadge: document.getElementById('notifBadge'),
+                tabCalendar: document.getElementById('tabCalendar'),
+                tabList: document.getElementById('tabList'),
+                tabBookingCount: document.getElementById('tabBookingCount'),
+                calendarView: document.getElementById('calendarView'),
+                listView: document.getElementById('listView'),
+                courseStrip: document.getElementById('courseStrip'),
+                prevWeekBtn: document.getElementById('prevWeekBtn'),
+                nextWeekBtn: document.getElementById('nextWeekBtn'),
+                todayWeekBtn: document.getElementById('todayWeekBtn'),
+                weekRangeMain: document.getElementById('weekRangeMain'),
+                matrixHead: document.getElementById('matrixHead'),
+                matrixBody: document.getElementById('matrixBody'),
+                bookingListContainer: document.getElementById('bookingListContainer'),
+                goCalendarFromListBtn: document.getElementById('goCalendarFromListBtn'),
+                bookingModal: document.getElementById('bookingModal'),
+                bookingForm: document.getElementById('bookingForm'),
+                closeModalBtn: document.getElementById('closeModalBtn'),
+                cancelModalBtn: document.getElementById('cancelModalBtn'),
+                submitBookingBtn: document.getElementById('submitBookingBtn'),
+                modalSlotText: document.getElementById('modalSlotText'),
+                guestName: document.getElementById('guestName'),
+                courseSelect: document.getElementById('courseSelect'),
+                lightingPref: document.getElementById('lightingPref'),
+                guestMemo: document.getElementById('guestMemo'),
+                adminAuthModal: document.getElementById('adminAuthModal'),
+                adminAuthForm: document.getElementById('adminAuthForm'),
+                adminPassInput: document.getElementById('adminPassInput'),
+                adminPassError: document.getElementById('adminPassError'),
+                closeAuthBtn: document.getElementById('closeAuthBtn'),
+                cancelAuthBtn: document.getElementById('cancelAuthBtn'),
+                topToast: document.getElementById('topToast'),
+                toastTitle: document.getElementById('toastTitle'),
+                toastMsg: document.getElementById('toastMsg')
+            };
+
+            let toastTimer = null;
+
+            function t() {
+                return I18N[state.lang] || I18N.ja;
+            }
+
+            function updateViewportLayout() {
+                const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+                const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                const root = document.documentElement;
+
+                const padX = vw >= 1024 ? 24 : (vw >= 640 ? 16 : 10);
+                const padY = vh >= 780 ? 12 : 8;
+                const stackGap = vh >= 780 ? 10 : 7;
+                const timeColW = vw >= 900 ? 84 : (vw >= 540 ? 70 : 58);
+
+                root.style.setProperty('--section-pad-x', `${padX}px`);
+                root.style.setProperty('--section-pad-y', `${padY}px`);
+                root.style.setProperty('--stack-gap', `${stackGap}px`);
+                root.style.setProperty('--time-col-w', `${timeColW}px`);
+
+                const headerH = els.appHeader ? els.appHeader.offsetHeight : 90;
+                const footerH = els.appFooter ? els.appFooter.offsetHeight : 32;
+                const topStackH = (state.activeTab === 'calendar' && els.calendarTopStack)
+                    ? els.calendarTopStack.offsetHeight
+                    : 0;
+
+                const headH = vh >= 760 ? 48 : 42;
+                root.style.setProperty('--head-h', `${headH}px`);
+
+                const availableForRows = vh - headerH - footerH - topStackH - (padY * 2) - stackGap - headH - 6;
+                const idealRowH = Math.floor(availableForRows / TIME_SLOTS.length);
+
+                if (idealRowH >= 32 && vw >= 640) {
+                    const clampedRowH = Math.min(58, idealRowH);
+                    const slotFont = clampedRowH >= 44 ? 19 : (clampedRowH >= 36 ? 17 : 15);
+                    root.style.setProperty('--cell-h', `${clampedRowH}px`);
+                    root.style.setProperty('--slot-font', `${slotFont}px`);
+                    document.body.classList.add('viewport-fit');
+                } else {
+                    root.style.setProperty('--cell-h', '42px');
+                    root.style.setProperty('--slot-font', '17px');
+                    document.body.classList.remove('viewport-fit');
+                }
+            }
+
+            function formatDateKey(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            function getBaseToday() {
+                const now = new Date();
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            }
+
+            function addDays(date, days) {
+                const next = new Date(date);
+                next.setDate(next.getDate() + days);
+                return next;
+            }
+
+            function formatDisplayDate(dateStr) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const dt = new Date(y, m - 1, d);
+                return t().formatDate(y, m, d, t().dow[dt.getDay()]);
+            }
+
+            function slotKey(dateStr, timeStr) {
+                return `${dateStr}_${timeStr}`;
+            }
+
+            function escapeHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function courseLabel(keyOrRaw) {
+                return (t().courses[keyOrRaw] && t().courses[keyOrRaw].label) || keyOrRaw;
+            }
+
+            function lightingLabel(keyOrRaw) {
+                return t().lighting[keyOrRaw] || keyOrRaw;
+            }
+
+            function showToast(title, msg) {
+                els.toastTitle.textContent = title;
+                els.toastMsg.textContent = msg;
+                els.topToast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    els.topToast.classList.remove('show');
+                }, 3200);
+            }
+
+            function setSyncStatus(status) {
+                state.syncStatus = status;
+                els.syncBtn.classList.remove('synced', 'syncing', 'error');
+                if (status === 'synced') {
+                    els.syncBtn.classList.add('synced');
+                    els.syncText.textContent = t().syncSynced;
+                } else if (status === 'syncing') {
+                    els.syncBtn.classList.add('syncing');
+                    els.syncText.textContent = t().syncSyncing;
+                } else if (status === 'error') {
+                    els.syncBtn.classList.add('error');
+                    els.syncText.textContent = t().syncError;
+                } else {
+                    els.syncText.textContent = t().syncLocal;
+                }
+            }
+
+            function saveLocalCache() {
+                try {
+                    localStorage.setItem(STORAGE_DATA_KEY, JSON.stringify({
+                        bookings: state.bookings,
+                        blockedSlots: state.blockedSlots
+                    }));
+                } catch (_) {}
+            }
+
+            function loadLocalCache() {
+                try {
+                    const savedLang = localStorage.getItem(STORAGE_LANG_KEY);
+                    if (savedLang && I18N[savedLang]) state.lang = savedLang;
+
+                    const savedGas = localStorage.getItem(STORAGE_GAS_KEY);
+                    state.gasUrl = (savedGas || DEFAULT_GAS_WEB_APP_URL || '').trim();
+                    els.gasUrlInput.value = state.gasUrl;
+
+                    const raw = localStorage.getItem(STORAGE_DATA_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        state.bookings = Array.isArray(parsed.bookings) ? parsed.bookings : [];
+                        state.blockedSlots = parsed.blockedSlots && typeof parsed.blockedSlots === 'object' ? parsed.blockedSlots : {};
+                        return;
+                    }
+                } catch (_) {}
+                seedDefaultBlocked();
+            }
+
+            function seedDefaultBlocked() {
+                const today = getBaseToday();
+                const d0 = formatDateKey(today);
+                const d1 = formatDateKey(addDays(today, 1));
+                state.blockedSlots = {
+                    [slotKey(d0, '20:00')]: true,
+                    [slotKey(d0, '20:30')]: true,
+                    [slotKey(d1, '24:30')]: true,
+                    [slotKey(d1, '25:00')]: true
+                };
+            }
+
+            async function fetchFromSheets(showSuccessToast = false) {
+                if (!state.gasUrl) {
+                    setSyncStatus('local');
+                    return;
+                }
+                setSyncStatus('syncing');
+                try {
+                    const res = await fetch(`${state.gasUrl}?t=${Date.now()}`, {
+                        method: 'GET',
+                        redirect: 'follow'
+                    });
+                    const data = await res.json();
+                    if (!data || !data.ok) throw new Error((data && data.error) || 'FETCH_ERROR');
+
+                    state.bookings = Array.isArray(data.bookings) ? data.bookings : [];
+                    state.blockedSlots = data.blockedSlots && typeof data.blockedSlots === 'object' ? data.blockedSlots : {};
+                    saveLocalCache();
+                    updateCounts();
+                    renderCalendar();
+                    renderBookingList();
+                    setSyncStatus('synced');
+                    if (showSuccessToast) showToast(t().toastSyncOk, t().toastSyncOkMsg);
+                } catch (_) {
+                    setSyncStatus('error');
+                    if (showSuccessToast) showToast(t().toastSyncErr, t().toastSyncErrMsg);
+                }
+            }
+
+            async function postToSheets(payload) {
+                if (!state.gasUrl) return null;
+                setSyncStatus('syncing');
+                try {
+                    const res = await fetch(state.gasUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload),
+                        redirect: 'follow'
+                    });
+                    const data = await res.json();
+                    if (data && Array.isArray(data.bookings)) {
+                        state.bookings = data.bookings;
+                        state.blockedSlots = data.blockedSlots || {};
+                        saveLocalCache();
+                    }
+                    setSyncStatus(data && data.ok ? 'synced' : 'error');
+                    return data;
+                } catch (_) {
+                    setSyncStatus('error');
+                    return { ok: false, error: 'NETWORK_ERROR' };
+                }
+            }
+
+            function applyLanguage() {
+                const dict = t();
+                document.documentElement.lang = state.lang;
+                document.title = dict.pageTitle;
+                els.langSelect.value = state.lang;
+
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (typeof dict[key] === 'string') {
+                        el.textContent = dict[key];
+                    }
+                });
+
+                els.guestName.placeholder = dict.namePlaceholder;
+                els.guestMemo.placeholder = dict.memoPlaceholder;
+                els.adminPassInput.placeholder = dict.authPlaceholder;
+
+                els.courseStrip.innerHTML = COURSE_KEYS.map(key => {
+                    const c = dict.courses[key];
+                    const active = state.selectedCourse === key ? 'active' : '';
+                    return `
+                        <button class="course-chip ${active}" type="button" data-course="${key}">
+                            <span>${escapeHtml(c.label)}</span>
+                            <span class="chip-min">${escapeHtml(c.min)}</span>
+                        </button>
+                    `;
+                }).join('');
+
+                els.courseSelect.innerHTML = COURSE_KEYS.map(key => {
+                    const c = dict.courses[key];
+                    return `<option value="${key}">${escapeHtml(c.label)} (${escapeHtml(c.min)})</option>`;
+                }).join('');
+                els.courseSelect.value = state.selectedCourse;
+
+                const prevLight = els.lightingPref.value || 'auto';
+                els.lightingPref.innerHTML = LIGHTING_KEYS.map(key => {
+                    return `<option value="${key}">${escapeHtml(dict.lighting[key])}</option>`;
+                }).join('');
+                els.lightingPref.value = LIGHTING_KEYS.includes(prevLight) ? prevLight : 'auto';
+
+                setSyncStatus(state.syncStatus);
+                renderCalendar();
+                renderBookingList();
+                requestAnimationFrame(updateViewportLayout);
+            }
+
+            function getWeekDates() {
+                const start = addDays(getBaseToday(), state.weekOffset * 7);
+                return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+            }
+
+            function findBooking(dateStr, timeStr) {
+                return state.bookings.find(b => b.date === dateStr && b.time === timeStr);
+            }
+
+            function updateCounts() {
+                const count = state.bookings.length;
+                els.tabBookingCount.textContent = String(count);
+                els.notifBadge.textContent = String(count);
+                els.notifBadge.classList.toggle('hidden', count === 0);
+            }
+
+            function renderCalendar() {
+                const dict = t();
+                const days = getWeekDates();
+                const todayKey = formatDateKey(getBaseToday());
+                els.weekRangeMain.textContent = dict.formatRange(days[0], days[days.length - 1]);
+                els.prevWeekBtn.disabled = state.weekOffset <= 0;
+                els.todayWeekBtn.classList.toggle('hidden', state.weekOffset === 0);
+
+                let headHtml = `<tr><th class="time-col-head">${escapeHtml(dict.timeCol)}</th>`;
+                days.forEach(d => {
+                    const dow = d.getDay();
+                    const key = formatDateKey(d);
+                    const classes = [];
+                    if (dow === 6) classes.push('is-sat');
+                    if (dow === 0) classes.push('is-sun');
+                    if (key === todayKey) classes.push('is-today');
+                    headHtml += `
+                        <th class="${classes.join(' ')}">
+                            <span class="day-head-date">${d.getMonth() + 1}/${d.getDate()}</span>
+                            <span class="day-head-dow">(${dict.dow[dow]})</span>
+                        </th>
+                    `;
+                });
+                headHtml += '</tr>';
+                els.matrixHead.innerHTML = headHtml;
+
+                let bodyHtml = '';
+                TIME_SLOTS.forEach(time => {
+                    bodyHtml += `<tr><td class="time-cell">${time}</td>`;
+                    days.forEach(d => {
+                        const dateStr = formatDateKey(d);
+                        const key = slotKey(dateStr, time);
+                        const booking = findBooking(dateStr, time);
+                        const isBlocked = Boolean(state.blockedSlots[key]);
+
+                        if (booking) {
+                            bodyHtml += `
+                                <td class="slot-cell">
+                                    <button type="button" class="slot-btn status-booked"
+                                        data-date="${dateStr}" data-time="${time}" data-state="booked">
+                                        <span>${escapeHtml(dict.markBookedShort)}</span>
+                                        <span class="slot-booked-name">${escapeHtml(booking.name)}</span>
+                                    </button>
+                                </td>
+                            `;
+                        } else if (isBlocked) {
+                            bodyHtml += `
+                                <td class="slot-cell">
+                                    <button type="button" class="slot-btn status-ng"
+                                        data-date="${dateStr}" data-time="${time}" data-state="ng"
+                                        ${state.adminMode ? '' : 'disabled'}>
+                                        ×
+                                    </button>
+                                </td>
+                            `;
+                        } else {
+                            bodyHtml += `
+                                <td class="slot-cell">
+                                    <button type="button" class="slot-btn status-ok"
+                                        data-date="${dateStr}" data-time="${time}" data-state="ok">
+                                        ◎
+                                    </button>
+                                </td>
+                            `;
+                        }
+                    });
+                    bodyHtml += '</tr>';
+                });
+                els.matrixBody.innerHTML = bodyHtml;
+            }
+
+            function renderBookingList() {
+                const dict = t();
+                if (state.bookings.length === 0) {
+                    els.bookingListContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🌙</div>
+                            <h3>${escapeHtml(dict.emptyTitle)}</h3>
+                            <p>${escapeHtml(dict.emptyDesc)}</p>
+                            <button type="button" class="btn-primary-inline" id="emptyGoCalendarBtn">${escapeHtml(dict.emptyBtn)}</button>
+                        </div>
+                    `;
+                    const btn = document.getElementById('emptyGoCalendarBtn');
+                    if (btn) btn.addEventListener('click', () => switchTab('calendar'));
+                    return;
+                }
+
+                const sorted = [...state.bookings].sort((a, b) =>
+                    `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`)
+                );
+
+                els.bookingListContainer.innerHTML = sorted.map(b => `
+                    <article class="booking-card">
+                        <div class="booking-card-top">
+                            <div class="booking-datetime">${escapeHtml(formatDisplayDate(b.date))} ${escapeHtml(b.time)}〜</div>
+                            <span class="booking-badge">${escapeHtml(courseLabel(b.course))}</span>
+                        </div>
+                        <div class="booking-meta">
+                            <span>${escapeHtml(dict.cardName)}: <strong>${escapeHtml(b.name)}</strong></span>
+                            <span>${escapeHtml(dict.cardLighting)}: <strong>${escapeHtml(lightingLabel(b.lighting))}</strong></span>
+                        </div>
+                        ${b.memo ? `<div class="booking-memo">${escapeHtml(b.memo)}</div>` : ''}
+                        <div class="booking-actions">
+                            <button type="button" class="btn-line-share" data-share-id="${escapeHtml(b.id)}">${escapeHtml(dict.shareBtn)}</button>
+                            <button type="button" class="btn-cancel" data-cancel-id="${escapeHtml(b.id)}">${escapeHtml(dict.cancelBookingBtn)}</button>
+                        </div>
+                    </article>
+                `).join('');
+            }
+
+            function switchTab(tab) {
+                state.activeTab = tab;
+                const isCal = tab === 'calendar';
+                els.tabCalendar.classList.toggle('active', isCal);
+                els.tabList.classList.toggle('active', !isCal);
+                els.calendarView.classList.toggle('hidden', !isCal);
+                els.listView.classList.toggle('hidden', isCal);
+                if (!isCal) renderBookingList();
+                requestAnimationFrame(updateViewportLayout);
+            }
+
+            function openBookingModal(dateStr, timeStr) {
+                state.pendingSlot = { date: dateStr, time: timeStr };
+                els.modalSlotText.textContent = `${formatDisplayDate(dateStr)} ${timeStr}〜`;
+                els.courseSelect.value = state.selectedCourse;
+                els.bookingModal.classList.remove('hidden');
+                setTimeout(() => els.guestName.focus(), 40);
+            }
+
+            function closeBookingModal() {
+                state.pendingSlot = null;
+                els.bookingModal.classList.add('hidden');
+            }
+
+            function openAdminAuthModal() {
+                els.adminPassInput.value = '';
+                els.adminPassError.classList.add('hidden');
+                els.adminAuthModal.classList.remove('hidden');
+                setTimeout(() => els.adminPassInput.focus(), 40);
+            }
+
+            function closeAdminAuthModal() {
+                els.adminAuthModal.classList.add('hidden');
+            }
+
+            function setAdminMode(enabled) {
+                state.adminMode = enabled;
+                els.adminToggleBtn.classList.toggle('admin-active', enabled);
+                els.adminBanner.classList.toggle('hidden', !enabled);
+                els.appShell.classList.toggle('admin-mode', enabled);
+                renderCalendar();
+                requestAnimationFrame(updateViewportLayout);
+                showToast(
+                    enabled ? t().toastAdminOn : t().toastAdminOff,
+                    enabled ? t().toastAdminOnMsg : t().toastAdminOffMsg
+                );
+            }
+
+            function copyLineText(booking) {
+                const dict = t();
+                const text = [
+                    dict.shareHeader,
+                    `${formatDisplayDate(booking.date)} ${booking.time}〜`,
+                    `${dict.cardName}: ${booking.name}`,
+                    `${dict.courseLabel}: ${courseLabel(booking.course)}`,
+                    `${dict.cardLighting}: ${lightingLabel(booking.lighting)}`,
+                    booking.memo ? `${dict.memoLabel}: ${booking.memo}` : ''
+                ].filter(Boolean).join('\n');
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast(dict.toastCopiedTitle, dict.toastCopiedMsg);
+                    }).catch(() => {
+                        showToast(dict.toastCopiedTitle, text);
+                    });
+                } else {
+                    showToast(dict.toastCopiedTitle, text);
+                }
+            }
+
+            els.langSelect.addEventListener('change', (e) => {
+                state.lang = e.target.value;
+                try { localStorage.setItem(STORAGE_LANG_KEY, state.lang); } catch (_) {}
+                applyLanguage();
+            });
+
+            els.syncBtn.addEventListener('click', () => {
+                if (state.gasUrl) {
+                    fetchFromSheets(true);
+                } else {
+                    showToast(t().syncLocal, t().toastSyncErrMsg);
+                }
+            });
+
+            els.tabCalendar.addEventListener('click', () => switchTab('calendar'));
+            els.tabList.addEventListener('click', () => switchTab('list'));
+            els.goCalendarFromListBtn.addEventListener('click', () => switchTab('calendar'));
+            els.notifBtn.addEventListener('click', () => {
+                switchTab('list');
+                showToast(t().toastListInfo, t().countMsg(state.bookings.length));
+            });
+
+            els.adminToggleBtn.addEventListener('click', () => {
+                if (state.adminMode) {
+                    setAdminMode(false);
+                } else {
+                    openAdminAuthModal();
+                }
+            });
+
+            els.closeAuthBtn.addEventListener('click', closeAdminAuthModal);
+            els.cancelAuthBtn.addEventListener('click', closeAdminAuthModal);
+            els.adminAuthModal.addEventListener('click', (e) => {
+                if (e.target === els.adminAuthModal) closeAdminAuthModal();
+            });
+
+            els.adminAuthForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (els.adminPassInput.value.trim() === ADMIN_PASSCODE) {
+                    closeAdminAuthModal();
+                    setAdminMode(true);
+                } else {
+                    els.adminPassError.classList.remove('hidden');
+                    els.adminPassInput.select();
+                }
+            });
+
+            els.saveGasUrlBtn.addEventListener('click', () => {
+                const url = els.gasUrlInput.value.trim();
+                state.gasUrl = url;
+                try { localStorage.setItem(STORAGE_GAS_KEY, url); } catch (_) {}
+                if (url) {
+                    fetchFromSheets(true);
+                } else {
+                    setSyncStatus('local');
+                }
+            });
+
+            els.resetDataBtn.addEventListener('click', async () => {
+                if (!window.confirm(t().confirmReset)) return;
+                if (state.gasUrl) {
+                    const res = await postToSheets({ action: 'reset_all', adminPassword: ADMIN_PASSCODE });
+                    if (!res || !res.ok) {
+                        showToast(t().toastSyncErr, t().toastSyncErrMsg);
+                        return;
+                    }
+                } else {
+                    state.bookings = [];
+                    state.blockedSlots = {};
+                    saveLocalCache();
+                }
+                updateCounts();
+                renderCalendar();
+                renderBookingList();
+                showToast(t().toastReset, t().toastResetMsg);
+            });
+
+            els.courseStrip.addEventListener('click', (e) => {
+                const chip = e.target.closest('.course-chip');
+                if (!chip) return;
+                state.selectedCourse = chip.dataset.course;
+                els.courseStrip.querySelectorAll('.course-chip').forEach(c => {
+                    c.classList.toggle('active', c.dataset.course === state.selectedCourse);
+                });
+            });
+
+            els.prevWeekBtn.addEventListener('click', () => {
+                if (state.weekOffset > 0) {
+                    state.weekOffset--;
+                    renderCalendar();
+                }
+            });
+
+            els.nextWeekBtn.addEventListener('click', () => {
+                state.weekOffset++;
+                renderCalendar();
+            });
+
+            els.todayWeekBtn.addEventListener('click', () => {
+                state.weekOffset = 0;
+                renderCalendar();
+            });
+
+            els.matrixBody.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.slot-btn');
+                if (!btn) return;
+                const { date, time, state: slotState } = btn.dataset;
+                const key = slotKey(date, time);
+
+                if (state.adminMode) {
+                    if (slotState === 'booked') {
+                        switchTab('list');
+                        return;
+                    }
+                    if (state.gasUrl) {
+                        const res = await postToSheets({
+                            action: 'toggle_block',
+                            date,
+                            time,
+                            adminPassword: ADMIN_PASSCODE
+                        });
+                        if (!res || !res.ok) {
+                            showToast(t().toastSyncErr, t().toastSyncErrMsg);
+                            return;
+                        }
+                    } else {
+                        if (state.blockedSlots[key]) delete state.blockedSlots[key];
+                        else state.blockedSlots[key] = true;
+                        saveLocalCache();
+                    }
+                    renderCalendar();
+                    return;
+                }
+
+                if (slotState === 'ok') {
+                    openBookingModal(date, time);
+                } else if (slotState === 'booked') {
+                    switchTab('list');
+                }
+            });
+
+            els.closeModalBtn.addEventListener('click', closeBookingModal);
+            els.cancelModalBtn.addEventListener('click', closeBookingModal);
+            els.bookingModal.addEventListener('click', (e) => {
+                if (e.target === els.bookingModal) closeBookingModal();
+            });
+
+            els.bookingForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!state.pendingSlot) return;
+                const name = els.guestName.value.trim();
+                if (!name) return;
+
+                const newBooking = {
+                    id: String(Date.now()),
+                    date: state.pendingSlot.date,
+                    time: state.pendingSlot.time,
+                    name,
+                    course: els.courseSelect.value,
+                    lighting: els.lightingPref.value,
+                    memo: els.guestMemo.value.trim()
+                };
+
+                els.submitBookingBtn.disabled = true;
+                els.submitBookingBtn.textContent = t().submittingBtn;
+
+                try {
+                    if (state.gasUrl) {
+                        const res = await postToSheets({ action: 'create_booking', booking: newBooking });
+                        if (!res || !res.ok) {
+                            const isTaken = res && (res.error === 'SLOT_ALREADY_BOOKED' || res.error === 'SLOT_BLOCKED');
+                            showToast(
+                                isTaken ? t().toastSlotTaken : t().toastSyncErr,
+                                isTaken ? t().toastSlotTakenMsg : t().toastSyncErrMsg
+                            );
+                            updateCounts();
+                            renderCalendar();
+                            renderBookingList();
+                            return;
+                        }
+                    } else {
+                        state.bookings.push(newBooking);
+                        saveLocalCache();
+                    }
+
+                    updateCounts();
+                    renderCalendar();
+                    renderBookingList();
+                    closeBookingModal();
+                    els.guestMemo.value = '';
+                    showToast(
+                        t().toastBookedTitle,
+                        `${formatDisplayDate(newBooking.date)} ${newBooking.time}〜 (${newBooking.name})`
+                    );
+                } finally {
+                    els.submitBookingBtn.disabled = false;
+                    els.submitBookingBtn.textContent = t().submitBtn;
+                }
+            });
+
+            els.bookingListContainer.addEventListener('click', async (e) => {
+                const shareBtn = e.target.closest('[data-share-id]');
+                if (shareBtn) {
+                    const target = state.bookings.find(b => b.id === shareBtn.dataset.shareId);
+                    if (target) copyLineText(target);
+                    return;
+                }
+
+                const cancelBtn = e.target.closest('[data-cancel-id]');
+                if (cancelBtn) {
+                    const id = cancelBtn.dataset.cancelId;
+                    const target = state.bookings.find(b => b.id === id);
+                    if (state.gasUrl) {
+                        const res = await postToSheets({ action: 'cancel_booking', id });
+                        if (!res || !res.ok) {
+                            showToast(t().toastSyncErr, t().toastSyncErrMsg);
+                            return;
+                        }
+                    } else {
+                        state.bookings = state.bookings.filter(b => b.id !== id);
+                        saveLocalCache();
+                    }
+                    updateCounts();
+                    renderCalendar();
+                    renderBookingList();
+                    if (target) {
+                        showToast(t().toastCanceledTitle, `${formatDisplayDate(target.date)} ${target.time}〜`);
+                    }
+                }
+            });
+
+            window.addEventListener('resize', updateViewportLayout);
+            window.addEventListener('orientationchange', updateViewportLayout);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', updateViewportLayout);
+            }
+            if (typeof ResizeObserver !== 'undefined') {
+                const ro = new ResizeObserver(updateViewportLayout);
+                ro.observe(els.appHeader);
+                ro.observe(els.calendarTopStack);
+            }
+
+            loadLocalCache();
+            updateCounts();
+            applyLanguage();
+            updateViewportLayout();
+            fetchFromSheets(false);
+        })();
+    </script>
+</body>
+</html>
