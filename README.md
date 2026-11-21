@@ -1,4 +1,4 @@
-# 寝室入室 予約フォーム（Private Bedroom Salon Booking）
+# 寝室入室 予約フォーム（maji-nemy）
 
 サロン風の週間空き状況マトリクスから寝室への入室予約ができるWebアプリです。
 **GitHub Pages** でそのまま公開でき、**Google スプレッドシート ＋ Google Apps Script (GAS)** と連携して予約データを永続保存・リアルタイム取得します。
