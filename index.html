@@ -1299,7 +1299,7 @@
                 <section class="salon-info-card">
                     <div class="salon-info-text">
                         <h2 data-i18n="bannerTitle">ご希望の日時をタップしてご予約ください</h2>
-                        <p data-i18n="bannerSub">受付時間：20:00〜25:00（30分刻み・当日予約OK）</p>
+                        <p data-i18n="bannerSub">受付時間：24時間対応（00:00〜23:30・30分刻み・当日予約OK）</p>
                     </div>
                     <div class="legend-pills">
                         <span class="legend-item"><span class="mark-ok-sample">◎</span> <span data-i18n="legendOk">空きあり</span></span>
@@ -1445,18 +1445,18 @@
                Google Apps Script (gas/Code.gs) のウェブアプリURLを
                DEFAULT_GAS_WEB_APP_URL に貼り付けて公開してください。
                ========================================================= */
-            const DEFAULT_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzzEojGIYjx31O-q0yaQI0J8dLVwxx1GhF4mWSgdjvXHHapVQuMiYTafo6Flq__yNHr/exec';
+            const DEFAULT_GAS_WEB_APP_URL = '';
             const ADMIN_PASSCODE = '1107';
 
             const STORAGE_DATA_KEY = 'bedroom_salon_cache_v3';
             const STORAGE_LANG_KEY = 'bedroom_salon_lang_v2';
             const STORAGE_GAS_KEY = 'bedroom_salon_gas_url_v2';
 
-            const TIME_SLOTS = [
-                '20:00', '20:30', '21:00', '21:30',
-                '22:00', '22:30', '23:00', '23:30',
-                '24:00', '24:30', '25:00'
-            ];
+            const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
+                const hh = String(Math.floor(i / 2)).padStart(2, '0');
+                const mm = i % 2 === 0 ? '00' : '30';
+                return `${hh}:${mm}`;
+            });
 
             const COURSE_KEYS = ['normal', 'chat', 'relax', 'quiet'];
             const LIGHTING_KEYS = ['auto', 'dim', 'dark', 'bright'];
@@ -1470,7 +1470,7 @@
                     tabCalendar: '空き状況・枠管理',
                     tabList: '予約一覧（管理者専用）',
                     bannerTitle: 'ご希望の日時をタップしてご予約ください',
-                    bannerSub: '受付時間：20:00〜25:00（30分刻み・当日予約OK）',
+                    bannerSub: '受付時間：24時間対応（00:00〜23:30・30分刻み・当日予約OK）',
                     legendOk: '空きあり',
                     legendBooked: '予約済',
                     legendNg: '満席',
@@ -1563,7 +1563,7 @@
                     tabCalendar: 'Availability & Slots',
                     tabList: 'Bookings (Admin)',
                     bannerTitle: 'Tap an available time slot to book',
-                    bannerSub: 'Hours: 20:00–25:00 (30-min intervals · Same-day OK)',
+                    bannerSub: 'Hours: Open 24 Hours (30-min intervals · Same-day OK)',
                     legendOk: 'Open',
                     legendBooked: 'Booked',
                     legendNg: 'Closed',
@@ -1656,7 +1656,7 @@
                     tabCalendar: '예약 현황·관리',
                     tabList: '예약 목록 (관리자)',
                     bannerTitle: '원하는 날짜와 시간을 탭해 예약하세요',
-                    bannerSub: '접수 시간: 20:00~25:00 (30분 단위 · 당일 예약 가능)',
+                    bannerSub: '접수 시간: 24시간 대응 (30분 단위 · 당일 예약 가능)',
                     legendOk: '예약 가능',
                     legendBooked: '예약 완료',
                     legendNg: '마감',
@@ -1749,7 +1749,7 @@
                     tabCalendar: '空位与时段管理',
                     tabList: '预约列表（管理员）',
                     bannerTitle: '点击空闲时段即可预约',
-                    bannerSub: '接待时间：20:00〜25:00（每30分钟 · 可当天预约）',
+                    bannerSub: '接待时间：24小时全天（每30分钟 · 可当天预约）',
                     legendOk: '可预约',
                     legendBooked: '已预约',
                     legendNg: '已满',
@@ -1842,7 +1842,7 @@
                     tabCalendar: 'Lịch & Quản lý ô',
                     tabList: 'Danh sách đặt (Quản trị)',
                     bannerTitle: 'Chạm vào khung giờ trống để đặt lịch',
-                    bannerSub: 'Giờ nhận: 20:00–25:00 (mỗi 30 phút · Đặt trong ngày OK)',
+                    bannerSub: 'Giờ nhận: Mở cửa 24/24 (mỗi 30 phút · Đặt trong ngày OK)',
                     legendOk: 'Còn trống',
                     legendBooked: 'Đã đặt',
                     legendNg: 'Kín lịch',
@@ -2027,14 +2027,10 @@
                 const headH = vh >= 760 ? 48 : 42;
                 root.style.setProperty('--head-h', `${headH}px`);
 
-                const availableForRows = vh - headerH - footerH - topStackH - (padY * 2) - stackGap - headH - 6;
-                const idealRowH = Math.floor(availableForRows / TIME_SLOTS.length);
-
-                if (idealRowH >= 32 && vw >= 640) {
-                    const clampedRowH = Math.min(58, idealRowH);
-                    const slotFont = clampedRowH >= 44 ? 19 : (clampedRowH >= 36 ? 17 : 15);
-                    root.style.setProperty('--cell-h', `${clampedRowH}px`);
-                    root.style.setProperty('--slot-font', `${slotFont}px`);
+                if (vw >= 640) {
+                    const rowH = vh >= 820 ? 42 : 38;
+                    root.style.setProperty('--cell-h', `${rowH}px`);
+                    root.style.setProperty('--slot-font', '17px');
                     document.body.classList.add('viewport-fit');
                 } else {
                     root.style.setProperty('--cell-h', '42px');
@@ -2158,15 +2154,7 @@
             }
 
             function seedDefaultBlocked() {
-                const today = getBaseToday();
-                const d0 = formatDateKey(today);
-                const d1 = formatDateKey(addDays(today, 1));
-                state.blockedSlots = {
-                    [slotKey(d0, '20:00')]: true,
-                    [slotKey(d0, '20:30')]: true,
-                    [slotKey(d1, '24:30')]: true,
-                    [slotKey(d1, '25:00')]: true
-                };
+                state.blockedSlots = {};
             }
 
             function applyServerData(data) {
